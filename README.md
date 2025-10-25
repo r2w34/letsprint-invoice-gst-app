@@ -1,70 +1,484 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📄 LetsPrint - GST Invoice App for Shopify
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Shopify embedded app for generating GST-compliant invoices for Indian merchants. Built with Node.js, Express, React, and MongoDB.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- ✅ **GST-Compliant Invoices** - Generate invoices with proper GST calculations
+- ✅ **Shopify Integration** - Seamlessly integrates with Shopify Admin
+- ✅ **Custom Branding** - Upload logo and signature
+- ✅ **Store Settings** - Manage store profile and GST details
+- ✅ **Order Management** - View and process orders
+- ✅ **Product Sync** - Automatic product synchronization
+- ✅ **S3 Storage** - Secure file storage on AWS S3
+- ✅ **MongoDB Database** - Scalable data storage
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📋 Prerequisites
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Before you begin, ensure you have:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Node.js** 18+ installed
+- **MongoDB** running locally or remote connection
+- **Shopify Partner Account** with app credentials
+- **AWS Account** with S3 bucket (for file uploads)
+- **Domain** with SSL certificate (for production)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🛠️ Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### 1. Clone Repository
 
-### Premium Partners
+```bash
+git clone https://github.com/r2w34/letsprint-invoice-gst-app.git
+cd letsprint-invoice-gst-app
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### 2. Install Dependencies
 
-## Contributing
+**Backend:**
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Frontend:**
+```bash
+cd frontend
+npm install
+cd ..
+```
 
-## Code of Conduct
+### 3. Configure Environment
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Edit `.env` with your credentials:
+```env
+# Shopify Configuration
+SHOPIFY_API_KEY=your_shopify_api_key
+SHOPIFY_API_SECRET=your_shopify_api_secret
+HOST=your-domain.com
+PORT=3000
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# MongoDB (IMPORTANT: Use MONGO_URI not MONGODB_URI!)
+MONGO_URI=mongodb://127.0.0.1:27017/letsprint
 
-## License
+# Node Environment (CRITICAL: Must be 'production' for built frontend!)
+NODE_ENV=production
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-## Authenticate
+# Shopify Scopes
+SCOPES=write_products,read_orders,write_customers,read_products
 
-email : admin@gmail.com <br>
-pass : password
+# AWS S3
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=ap-south-1
+S3_BUCKET_NAME=your_bucket_name
+```
+
+**Important Notes:**
+- ⚠️ Use `MONGO_URI` NOT `MONGODB_URI` (the code uses MONGO_URI)
+- ⚠️ Set `NODE_ENV=production` to serve the built frontend
+- ⚠️ Set `PORT=3000` (default port for the app)
+
+### 4. Build Frontend
+
+```bash
+cd frontend
+SHOPIFY_API_KEY=your_shopify_api_key npm run build
+cd ..
+```
+
+### 5. Start Application
+
+**Development:**
+```bash
+npm run dev
+```
+
+**Production (PM2):**
+```bash
+pm2 start index.js --name letsprint
+pm2 save
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Shopify Admin                        │
+│              (Embedded App Interface)                   │
+└───────────────────┬─────────────────────────────────────┘
+                    │
+                    │ OAuth 2.0 + Session Tokens
+                    │
+┌───────────────────▼─────────────────────────────────────┐
+│                   Nginx (SSL)                           │
+│          https://your-domain.com                        │
+└───────────────────┬─────────────────────────────────────┘
+                    │
+                    │ Reverse Proxy
+                    │
+┌───────────────────▼─────────────────────────────────────┐
+│              Express.js App (Port 3000)                 │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │  Frontend (React + Vite)                         │  │
+│  │  - App Bridge Provider                           │  │
+│  │  - Polaris UI Components                         │  │
+│  │  - Settings, Orders, Products pages              │  │
+│  └──────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │  Backend (Node.js + Express)                     │  │
+│  │  - Authentication Middleware                     │  │
+│  │  - API Routes                                    │  │
+│  │  - Controllers                                   │  │
+│  └──────────────────────────────────────────────────┘  │
+└────────────┬────────────────────────────┬───────────────┘
+             │                            │
+             │                            │
+┌────────────▼─────────┐     ┌────────────▼──────────────┐
+│   MongoDB            │     │    SQLite                 │
+│   - Store Profiles   │     │    - Session Storage      │
+│   - Templates        │     │    - Access Tokens        │
+│   - SMTP Config      │     │                           │
+└──────────────────────┘     └───────────────────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+```
+letsprint-invoice-gst-app/
+├── index.js                 # Main application entry point
+├── shopify.js              # Shopify API configuration
+├── package.json            # Backend dependencies
+├── .env                    # Environment variables (create from .env.example)
+├── database.sqlite         # SQLite session storage (auto-created)
+│
+├── frontend/               # React frontend
+│   ├── dist/              # Built production files (generated)
+│   ├── pages/             # App pages (Settings, Orders, etc.)
+│   ├── components/        # React components
+│   │   └── providers/
+│   │       └── AppBridgeProvider.jsx  # Shopify App Bridge setup
+│   ├── App.jsx            # Main app component
+│   ├── vite.config.js     # Vite build configuration
+│   └── package.json       # Frontend dependencies
+│
+├── controllers/           # Business logic
+│   └── storeController.js # Store profile management
+│
+├── database/              # Database configuration
+│   └── db.js             # MongoDB connection
+│
+├── middleware/            # Express middleware
+│   └── validateSessionToken.js  # Authentication
+│
+├── routes/               # API routes
+│   └── routes.js         # Route definitions
+│
+└── Models/               # MongoDB schemas
+    ├── storeModel.js
+    ├── storeInfoModel.js
+    ├── InvoiceTemplateModel.js
+    └── SMTPConfig.js
+```
+
+---
+
+## 🔐 Authentication Flow
+
+The app uses Shopify's OAuth 2.0 with session tokens:
+
+1. **Installation:**
+   - User installs app from Shopify Admin
+   - OAuth flow redirects to Shopify for authorization
+   - App receives access token
+   - Access token stored in SQLite (using Session class)
+
+2. **Session Management:**
+   - Frontend uses App Bridge to get session token
+   - Session token exchanged for access token
+   - Access token used for Shopify API calls
+
+3. **Token Exchange:**
+   ```
+   Frontend (App Bridge) 
+     → GET /api/auth/session-token
+     → Backend validates token
+     → Backend exchanges for access token
+     → Returns access token to frontend
+   ```
+
+---
+
+## 🔧 Configuration
+
+### Shopify App Setup
+
+1. **Create App** in Shopify Partner Dashboard
+2. **Set App URL:** `https://your-domain.com`
+3. **Set Redirect URLs:** `https://your-domain.com/api/auth/callback`
+4. **Set Scopes:**
+   - `write_products`
+   - `read_orders`
+   - `write_customers`
+   - `read_products`
+
+### Nginx Configuration
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    ssl_certificate /path/to/fullchain.pem;
+    ssl_certificate_key /path/to/privkey.pem;
+
+    # CRITICAL: Allow iframe embedding from Shopify
+    add_header X-Frame-Options "ALLOWALL" always;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 86400;
+    }
+}
+```
+
+---
+
+## 🐛 Common Issues & Solutions
+
+### Issue: MIME Type Errors in Console
+
+**Error:**
+```
+Failed to load module script: Expected a JavaScript module 
+but the server responded with a MIME type of "text/jsx"
+```
+
+**Cause:** `NODE_ENV` not set to `production`
+
+**Solution:**
+```bash
+echo "NODE_ENV=production" >> .env
+pm2 restart letsprint --update-env
+```
+
+---
+
+### Issue: "shopId is required" on Save
+
+**Cause:** shopId not being extracted from URL
+
+**Solution:**
+- Access app via Shopify Admin, NOT direct URL
+- URL must contain `?shop=yourstore.myshopify.com`
+- Check browser console for `[Settings] Shop ID from URL: ...`
+
+---
+
+### Issue: 502 Bad Gateway
+
+**Cause:** PM2 process not running or wrong port
+
+**Solution:**
+```bash
+# Check PM2 status
+pm2 status
+
+# Check logs
+pm2 logs letsprint
+
+# Restart if needed
+pm2 restart letsprint
+
+# Check nginx is proxying to correct port (3000)
+grep proxy_pass /etc/nginx/sites-enabled/your-app
+```
+
+---
+
+### Issue: MongoDB Connection Error
+
+**Cause:** MongoDB not running or wrong URI
+
+**Solution:**
+```bash
+# Start MongoDB
+systemctl start mongod
+
+# Check .env has MONGO_URI (not MONGODB_URI)
+grep MONGO /var/www/your-app/.env
+
+# Should be:
+# MONGO_URI=mongodb://127.0.0.1:27017/letsprint
+```
+
+---
+
+## 🧪 Testing
+
+### Access App
+
+**Correct Way:**
+```
+https://admin.shopify.com/store/YOUR_STORE/apps/YOUR_APP
+```
+
+**Wrong Way (will not work properly):**
+```
+https://your-domain.com  ❌
+```
+
+### Test Settings Save
+
+1. Go to Settings page
+2. Fill in form
+3. Click "Save Changes"
+4. Should see: ✅ "Settings saved successfully"
+
+### Check Logs
+
+```bash
+# View live logs
+pm2 logs letsprint
+
+# View recent logs
+pm2 logs letsprint --lines 100 --nostream
+
+# Check for errors
+pm2 logs letsprint --err
+```
+
+---
+
+## 📊 Monitoring
+
+### PM2 Commands
+
+```bash
+# Status
+pm2 status
+
+# Logs
+pm2 logs letsprint
+
+# Restart
+pm2 restart letsprint
+
+# Stop
+pm2 stop letsprint
+
+# Delete
+pm2 delete letsprint
+```
+
+### Database Queries
+
+**SQLite (Session Storage):**
+```bash
+sqlite3 /var/www/your-app/database.sqlite
+SELECT id, shop FROM shopify_sessions;
+.quit
+```
+
+**MongoDB (App Data):**
+```bash
+mongosh letsprint
+db.storeprofiles.find().pretty()
+exit
+```
+
+---
+
+## 🚀 Deployment
+
+### Production Checklist
+
+- [ ] Set `NODE_ENV=production` in .env
+- [ ] Build frontend: `cd frontend && npm run build`
+- [ ] Configure nginx with SSL
+- [ ] Set `X-Frame-Options: ALLOWALL` in nginx
+- [ ] Start with PM2: `pm2 start index.js --name letsprint`
+- [ ] Enable PM2 startup: `pm2 startup && pm2 save`
+- [ ] Configure MongoDB backups
+- [ ] Test app access via Shopify Admin
+- [ ] Test settings save functionality
+- [ ] Monitor logs for errors
+
+---
+
+## 🆘 Support
+
+### Documentation
+
+- See `COMPLETE_DEPLOYMENT_SUMMARY.md` for full deployment guide
+- See `AUTHENTICATION_EXPLANATION.md` for auth details
+- See `BUGS_FOUND_AND_FIXED.md` for known issues
+
+### Getting Help
+
+1. Check logs: `pm2 logs letsprint`
+2. Check MongoDB: `systemctl status mongod`
+3. Check nginx: `systemctl status nginx`
+4. Clear browser cache completely
+5. Try incognito window
+
+---
+
+## 📝 License
+
+This project is proprietary software.
+
+---
+
+## 👥 Contributors
+
+- Development Team
+- GitHub: https://github.com/r2w34/letsprint-invoice-gst-app
+
+---
+
+## 🔄 Recent Updates
+
+### Version 1.0.0 (Latest)
+
+**Fixed Issues:**
+1. ✅ Token exchange implementation
+2. ✅ Session storage using Session class (CRITICAL)
+3. ✅ Offline session ID format
+4. ✅ shop.json endpoint middleware
+5. ✅ Infinite loading screen (CRITICAL)
+6. ✅ Empty shopId on save (CRITICAL)
+7. ✅ NODE_ENV configuration (CRITICAL)
+
+**All bugs are fixed and the app is production-ready!**
+
+---
+
+## 📞 Contact
+
+For support or inquiries, please contact the development team.
+
+---
+
+*Last updated: October 25, 2025*
