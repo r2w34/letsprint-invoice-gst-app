@@ -315,15 +315,27 @@ app.get("/api/2024-10/orders.json", async (req, res) => {
 });
 
 
-app.get("/api/2024-10/shop.json", async (req, res) => {
+app.get("/api/2024-10/shop.json", validateSessionToken, async (req, res) => {
   try {
+    // Use the session set by validateSessionToken middleware
+    const session = res.locals.shopify.session;
+    
+    if (!session) {
+      console.error('[shop.json] No session found');
+      return res.status(401).json({ error: "No session found" });
+    }
+    
+    console.log('[shop.json] Fetching shop details for:', session.shop);
+    
     const shopDetails = await shopify.api.rest.Shop.all({
-      session: res.locals.shopify.session,
+      session: session,
     });
+    
+    console.log('[shop.json] Shop details fetched successfully');
     res.status(200).json({ data: shopDetails });
   } catch (error) {
-    console.error("Error fetching shop details:", error); // Log the error
-    res.status(500).json({ error: "Failed to fetch shop details" });
+    console.error("Error fetching shop details:", error.message); // Log the error
+    res.status(500).json({ error: "Failed to fetch shop details", message: error.message });
   }
 });
 
