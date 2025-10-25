@@ -10,22 +10,31 @@ export const updateStoreProfile = async (req, res) => {
       return res.status(400).json({ error: "Shop ID is required." });
     }
 
-    // Find the existing store profile by shopId
-    const existingProfile = await StoreProfile.findOne({ shopId });
+    // Find the existing store profile by shopId or create new one
+    let existingProfile = await StoreProfile.findOne({ shopId });
+    
     if (!existingProfile) {
-      return res
-        .status(404)
-        .json({ error: "Store profile not found for the given shop ID." });
+      // Create new profile if doesn't exist
+      console.log('[updateStoreProfile] Creating new store profile for shopId:', shopId);
+      existingProfile = new StoreProfile({
+        shopId,
+        storeProfile: storeProfile || {},
+        images: images || {},
+        addresses: addresses || {},
+        socialLinks: socialLinks || {}
+      });
+    } else {
+      // Update the existing profile with new data
+      existingProfile.storeProfile = storeProfile || existingProfile.storeProfile;
+      existingProfile.images = images || existingProfile.images;
+      existingProfile.addresses = addresses || existingProfile.addresses;
+      existingProfile.socialLinks = socialLinks || existingProfile.socialLinks;
     }
 
-    // Update the existing profile with new data
-    existingProfile.storeProfile = storeProfile || existingProfile.storeProfile;
-    existingProfile.images = images || existingProfile.images;
-    existingProfile.addresses = addresses || existingProfile.addresses;
-    existingProfile.socialLinks = socialLinks || existingProfile.socialLinks;
-
-    // Save the updated profile
+    // Save the profile
     await existingProfile.save();
+
+    console.log('[updateStoreProfile] Store profile saved successfully for shopId:', shopId);
 
     // Return the updated profile
     res.status(200).json({

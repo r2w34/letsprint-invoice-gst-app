@@ -31,7 +31,6 @@ import React, {
  import { InvoiceTemplate1 } from "../invoiceTemplates/invoice-template1";
  import { InvoiceTemplate2 } from "../invoiceTemplates/invoice-template2";
  import { InvoiceTemplate3 } from "../invoiceTemplates/invoice-template3";
- import { set } from "mongoose";
  
  
  export default function CustomizeTemplate() {

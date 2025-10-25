@@ -1,287 +1,70 @@
-# LetsPrint - GST Invoice App for Shopify
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-A comprehensive Shopify embedded app for generating GST-compliant invoices, managing orders, and customizing invoice templates.
+<p align="center">
+<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## Features
-
-- 📄 **GST Invoice Generation**: Create GST-compliant invoices for Indian businesses
-- 📦 **Order Management**: View and manage Shopify orders with invoice generation
-- 🎨 **Custom Templates**: Design and customize invoice templates
-- ✉️ **Email Integration**: Send invoices directly to customers via email
-- 📊 **Store Profile**: Manage store information and GST details
-- 💳 **Plans & Billing**: Flexible pricing plans for businesses of all sizes
+## About Laravel
 
-## Tech Stack
-
-### Backend
-- Node.js with Express
-- Shopify App Bridge
-- MongoDB for data storage
-- SQLite for session storage
-- AWS S3 for file storage
-
-### Frontend
-- React 18
-- Vite for build tooling
-- Shopify Polaris UI components
-- React Router for navigation
-- i18next for internationalization
-
-## Prerequisites
-
-- Node.js 18+ and npm
-- MongoDB instance
-- Shopify Partner account
-- AWS S3 bucket (for file storage)
-- Domain with SSL certificate
-
-## Installation
-
-### 1. Clone the repository
-
-```bash
-git clone <repository-url>
-cd letsprint-invoice-gst-app
-```
-
-### 2. Install dependencies
-
-```bash
-# Install backend dependencies
-npm install
-
-# Install frontend dependencies
-cd frontend
-npm install
-cd ..
-```
-
-### 3. Configure environment variables
-
-Create a `.env` file in the root directory:
-
-```env
-# Shopify App Configuration
-SHOPIFY_API_KEY=your_api_key
-SHOPIFY_API_SECRET=your_api_secret
-HOST=your-domain.com
-SHOPIFY_APP_URL=https://your-domain.com
-PORT=3003
-
-# MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/letsprint
-
-# Node Environment
-NODE_ENV=production
-
-# Shopify Scopes
-SCOPES=read_customers,write_files,read_locations,read_orders,read_products,write_products,read_product_listings,read_inventory,write_inventory,read_themes,write_themes,read_content,write_content
-
-# AWS S3 Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=your_region
-S3_BUCKET_NAME=your_bucket_name
-
-# RazorPay Configuration (for payments)
-RAZORPAY_KEY_ID=your_razorpay_key
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-```
-
-### 4. Build the frontend
-
-```bash
-cd frontend
-SHOPIFY_API_KEY=your_api_key npm run build
-cd ..
-```
-
-### 5. Set up Shopify App
-
-1. Go to [Shopify Partners Dashboard](https://partners.shopify.com/)
-2. Create a new app or use existing app
-3. Configure App URLs:
-   - **App URL**: `https://your-domain.com`
-   - **Allowed redirection URL(s)**: `https://your-domain.com/api/auth/callback`
-4. Set the API scopes as listed in your `.env` file
-5. Note down your Client ID and Client Secret
-
-### 6. Configure Nginx (Production)
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name your-domain.com;
-
-    ssl_certificate /path/to/ssl/certificate.crt;
-    ssl_certificate_key /path/to/ssl/private.key;
-
-    location / {
-        proxy_pass http://localhost:3003;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### 7. Run the application
-
-#### Development
-```bash
-npm run dev
-```
-
-#### Production with PM2
-```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start the app
-pm2 start index.js --name letsprint
-
-# Save PM2 configuration
-pm2 save
-
-# Set up PM2 to start on system boot
-pm2 startup
-```
-
-## Usage
-
-### Accessing the App
-
-1. Install the app from your Shopify Partner dashboard to a test store
-2. The app will appear in your Shopify Admin under Apps → LetsPrint
-3. Complete your store profile setup on the home page
-4. Navigate to Orders to generate invoices
-
-### Generating Invoices
-
-1. Go to the Orders page
-2. Select an order from the list
-3. Click "Generate Invoice"
-4. Customize the invoice template if needed
-5. Download or email the invoice to the customer
-
-### Customizing Templates
-
-1. Navigate to Invoice Templates
-2. Choose a template or create a new one
-3. Customize colors, logos, and layout
-4. Save your template for future use
-
-## Project Structure
-
-```
-letsprint-invoice-gst-app/
-├── Models/              # Database models
-├── controllers/         # Business logic controllers
-├── database/           # Database configuration
-├── routes/             # API routes
-├── frontend/           # React frontend application
-│   ├── components/     # React components
-│   ├── pages/          # Page components
-│   ├── assets/         # Static assets
-│   └── utils/          # Utility functions
-├── index.js            # Main server file
-├── shopify.js          # Shopify app configuration
-└── package.json        # Dependencies and scripts
-```
-
-## API Endpoints
-
-### Authentication
-- `GET /api/auth` - Initiate OAuth flow
-- `GET /api/auth/callback` - OAuth callback handler
-
-### Shop
-- `GET /api/2024-10/shop.json` - Get shop information
-
-### Orders
-- `GET /api/2024-10/orders.json` - Get all orders
-
-### Products
-- `GET /api/2024-10/products.json` - Get all products
-
-### Store Profile
-- `POST /api/store-profile` - Create/update store profile
-- `GET /api/store-profile/:shopId` - Get store profile
-
-### Invoices
-- `POST /api/invoices` - Generate invoice
-- `GET /api/invoices/:shopId` - Get invoices for shop
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `SHOPIFY_API_KEY` | Shopify app client ID | Yes |
-| `SHOPIFY_API_SECRET` | Shopify app client secret | Yes |
-| `HOST` | Your app's domain (without https://) | Yes |
-| `SHOPIFY_APP_URL` | Full app URL with https:// | Yes |
-| `PORT` | Port to run the server | Yes |
-| `MONGODB_URI` | MongoDB connection string | Yes |
-| `AWS_ACCESS_KEY_ID` | AWS access key for S3 | Yes |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key for S3 | Yes |
-| `S3_BUCKET_NAME` | S3 bucket name for file storage | Yes |
-| `RAZORPAY_KEY_ID` | Razorpay key for payments | Optional |
-| `RAZORPAY_KEY_SECRET` | Razorpay secret for payments | Optional |
-
-## Troubleshooting
-
-### App doesn't load in Shopify Admin
-
-1. Check that your domain has a valid SSL certificate
-2. Verify the App URL and redirect URLs in Shopify Partners Dashboard
-3. Ensure `SHOPIFY_APP_URL` in `.env` matches your actual domain
-4. Check browser console for errors
-
-### OAuth errors
-
-1. Verify your API key and secret are correct
-2. Make sure redirect URL is whitelisted in Shopify Partners
-3. Clear browser cookies and try again
-
-### Database connection issues
-
-1. Ensure MongoDB is running: `systemctl status mongod`
-2. Check MongoDB connection string in `.env`
-3. Verify network access to MongoDB
-
-## Security Notes
-
-- Never commit `.env` file to version control
-- Keep your API credentials secure
-- Use environment variables for all sensitive data
-- Regularly update dependencies for security patches
-- Use SSL/TLS for production deployment
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
+
+## Learning Laravel
+
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+
+You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+
+## Laravel Sponsors
+
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+
+### Premium Partners
+
+- **[Vehikl](https://vehikl.com/)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Cubet Techno Labs](https://cubettech.com)**
+- **[Cyber-Duck](https://cyber-duck.co.uk)**
+- **[Many](https://www.many.co.uk)**
+- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
+- **[DevSquad](https://devsquad.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+- **[OP.GG](https://op.gg)**
+- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
+- **[Lendio](https://lendio.com)**
+
+## Contributing
+
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
-Proprietary - All rights reserved
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Authenticate
 
-## Support
-
-For issues and questions, please contact the development team.
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- GST invoice generation
-- Order management
-- Custom invoice templates
-- Email integration
-- Store profile management
-- Plans and billing system
+email : admin@gmail.com <br>
+pass : password

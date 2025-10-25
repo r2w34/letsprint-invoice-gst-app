@@ -21,9 +21,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@shopify/polaris";
 import { FaStore } from "react-icons/fa";
-
 import { Text } from "@shopify/polaris";
-import { set } from "mongoose";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
