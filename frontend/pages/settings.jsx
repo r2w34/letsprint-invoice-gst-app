@@ -188,23 +188,40 @@ import {
  
  
   useEffect(() => {
-    window.authenticatedFetch("/api/2024-10/shop.json", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const shopInfo = data?.data?.data?.[0];
-        console.log("Shop info:", shopInfo);
-        setStoreDomain(shopInfo.domain || "");
-        setEmail(shopInfo.email || "");
-        // Use myshopify_domain as shopId (e.g., volter-store.myshopify.com)
-        setshopId(shopInfo.myshopify_domain || shopInfo.domain || "");
-        console.log("Store domain:", shopInfo.domain);
-        console.log("Email:", shopInfo.email);
-        console.log("ShopID (myshopify_domain):", shopInfo.myshopify_domain);
+    // Get shop domain from URL params (always provided by Shopify)
+    const urlParams = new URLSearchParams(window.location.search);
+    const shop = urlParams.get('shop');
+    
+    if (shop) {
+      console.log("Shop ID from URL:", shop);
+      setshopId(shop);
+      // Optionally still fetch shop info for email/domain, but don't block on it
+      window.authenticatedFetch("/api/2024-10/shop.json", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       })
-      .catch((error) => console.log("Error fetching shop info:", error));
+        .then((response) => {
+          if (!response.ok) {
+            console.warn("Failed to fetch shop details, using shop from URL");
+            return null;
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data) {
+            const shopInfo = data?.data?.data?.[0];
+            console.log("Shop info from API:", shopInfo);
+            setStoreDomain(shopInfo.domain || "");
+            setEmail(shopInfo.email || "");
+          }
+        })
+        .catch((error) => {
+          console.log("Error fetching shop info (non-critical):", error);
+          // Not a critical error - we already have shopId from URL
+        });
+    } else {
+      console.error("No shop parameter in URL!");
+    }
   }, []);
  
  
