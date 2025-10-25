@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, createContext, useContext } from 'react';
 import { createApp } from '@shopify/app-bridge';
-import { authenticatedFetch } from '@shopify/app-bridge/utilities';
+import { authenticatedFetch, getSessionToken } from '@shopify/app-bridge/utilities';
 
 // Create context for App Bridge
 const AppBridgeContext = createContext(null);
@@ -83,35 +83,22 @@ export function AppBridgeProvider({ children }) {
   // Token exchange function
   const handleTokenExchange = async () => {
     try {
-      // Get fresh session token from App Bridge
-      const sessionToken = await app.idToken();
+      // Get fresh session token from App Bridge using getSessionToken utility
+      const sessionToken = await getSessionToken(app);
       
       if (!sessionToken) {
         console.warn('[AppBridgeProvider] No session token available');
         return;
       }
 
-      console.log('[AppBridgeProvider] Attempting token exchange...');
+      console.log('[AppBridgeProvider] Session token obtained, length:', sessionToken.length);
 
-      // Call backend token exchange endpoint
-      const response = await fetch('/api/auth/token-exchange', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionToken }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Token exchange successful:', data.message || 'Access token obtained');
-      } else {
-        const error = await response.json();
-        console.warn('[AppBridgeProvider] Token exchange response:', error.message);
-        // Don't throw error - app might already have token
-      }
+      // Note: Session tokens are automatically included in authenticatedFetch
+      // No need for explicit token exchange - the middleware handles it
+      console.log('✅ Session token ready for authenticated requests');
+      
     } catch (error) {
-      console.error('[AppBridgeProvider] Token exchange error:', error);
+      console.error('[AppBridgeProvider] Token retrieval error:', error);
       // Don't throw - let the app try to function anyway
     }
   };
