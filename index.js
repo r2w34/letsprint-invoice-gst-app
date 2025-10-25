@@ -143,7 +143,8 @@ app.get(shopify.config.auth.path, async (req, res) => {
   }
   
   // Check if app is already installed
-  const sessionId = shopify.session.getOfflineId(shop);
+  // Use offline session ID format: offline_{shop}
+  const sessionId = `offline_${shop}`;
   let session = null;
   
   try {
@@ -206,7 +207,8 @@ app.post('/api/auth/token-exchange', async (req, res) => {
     console.log('[token-exchange] Shop from token:', shop);
 
     // Check if we already have an access token
-    const sessionId = shopify.session.getOfflineId(shop);
+    // Use offline session ID format: offline_{shop}
+    const sessionId = `offline_${shop}`;
     const existingSession = await shopify.config.sessionStorage.loadSession(sessionId);
 
     if (existingSession && existingSession.accessToken) {
