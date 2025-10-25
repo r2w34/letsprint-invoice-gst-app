@@ -7,7 +7,7 @@ import "@shopify/polaris/build/esm/styles.css"
 import "./styles.css"
 import { useEffect, useState } from "react"
 import { QueryProvider, PolarisProvider, AppBridgeProvider } from "./components"
-import { Spinner } from "@shopify/polaris"
+import { Spinner, Frame } from "@shopify/polaris"
 
 // Custom router wrapper that handles initial redirection
 function CustomRouter({ pages }) {
@@ -15,6 +15,8 @@ function CustomRouter({ pages }) {
  const [loading, setLoading] = useState(true)
  const [shouldRedirect, setShouldRedirect] = useState(false)
  const location = useLocation()
+ // Use window.authenticatedFetch which is set up by AppBridgeProvider
+ const fetch = window.authenticatedFetch || window.fetch
 
  // Comprehensive profile validation function
  const isProfileComplete = (profile) => {
@@ -40,30 +42,23 @@ function CustomRouter({ pages }) {
  useEffect(() => {
    // Only check on initial load or when on home page
    if (location.pathname === "/") {
-     checkProfileAndSetRedirect()
+     checkProfileAndSetRedirect(fetch)
    } else {
      // If not on home page, don't need to check
      setLoading(false)
    }
- }, [location.pathname])
+ }, [location.pathname, fetch])
 
- const checkProfileAndSetRedirect = async () => {
+ const checkProfileAndSetRedirect = async (fetchFunction) => {
    try {
-     // Wait for authenticatedFetch to be available
-     let retries = 0;
-     while (!window.authenticatedFetch && retries < 10) {
-       await new Promise(resolve => setTimeout(resolve, 100));
-       retries++;
-     }
-
-     if (!window.authenticatedFetch) {
-       console.error("authenticatedFetch not available");
+     if (!fetchFunction) {
+       console.error("Fetch function not available");
        setLoading(false);
        return;
      }
 
      // Step 1: Fetch shop data to get shop ID
-     const shopResponse = await window.authenticatedFetch("/api/2024-10/shop.json", {
+     const shopResponse = await fetchFunction("/api/2024-10/shop.json", {
        method: "GET",
        headers: { "Content-Type": "application/json" },
      })
@@ -84,7 +79,7 @@ function CustomRouter({ pages }) {
      }
 
      // Step 2: Fetch store profile using shop ID
-     const profileResponse = await window.authenticatedFetch(`/api/fetch-store-profile?shopId=${shopId}`, {
+     const profileResponse = await fetchFunction(`/api/fetch-store-profile?shopId=${shopId}`, {
        method: "GET",
        headers: { "Content-Type": "application/json" },
      })
@@ -147,9 +142,11 @@ function CustomRouter({ pages }) {
          <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
          <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
        </NavMenu>
-       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-         <Spinner accessibilityLabel="Loading" size="large" />
-       </div>
+       <Frame>
+         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+           <Spinner accessibilityLabel="Loading" size="large" />
+         </div>
+       </Frame>
      </>
    )
  }
@@ -167,21 +164,23 @@ function CustomRouter({ pages }) {
        <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
      </NavMenu>
 
-     <RouterRoutes>
-       {/* Handle home route with conditional redirect */}
-       {location.pathname === "/" && shouldRedirect ? (
-         <Route path="/" element={<Navigate to="/orders" replace />} />
-       ) : (
-         <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
-       )}
+     <Frame>
+       <RouterRoutes>
+         {/* Handle home route with conditional redirect */}
+         {location.pathname === "/" && shouldRedirect ? (
+           <Route path="/" element={<Navigate to="/orders" replace />} />
+         ) : (
+           <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
+         )}
 
-       {/* Add all other routes */}
-       {routeElements
-         .filter((route) => route.path !== "/")
-         .map((route) => (
-           <Route key={route.path} path={route.path} element={route.element} />
-         ))}
-     </RouterRoutes>
+         {/* Add all other routes */}
+         {routeElements
+           .filter((route) => route.path !== "/")
+           .map((route) => (
+             <Route key={route.path} path={route.path} element={route.element} />
+           ))}
+       </RouterRoutes>
+     </Frame>
    </>
  )
 }
