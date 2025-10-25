@@ -40,13 +40,17 @@ function CustomRouter({ pages }) {
  }
 
  useEffect(() => {
-   // Only check on initial load or when on home page
-   if (location.pathname === "/") {
-     checkProfileAndSetRedirect(fetch)
-   } else {
-     // If not on home page, don't need to check
-     setLoading(false)
-   }
+   // DISABLED: Profile check was causing infinite loading issues
+   // Users can access the app directly and navigate to settings if needed
+   setLoading(false);
+   setShouldRedirect(false);
+   
+   // Commented out profile check logic:
+   // if (location.pathname === "/") {
+   //   checkProfileAndSetRedirect(fetch)
+   // } else {
+   //   setLoading(false)
+   // }
  }, [location.pathname, fetch])
 
  const checkProfileAndSetRedirect = async (fetchFunction) => {
