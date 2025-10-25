@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { shopifyApi, Session } from '@shopify/shopify-api';
 
 /**
  * Middleware to validate Shopify session tokens for embedded apps
@@ -59,7 +60,8 @@ export function validateSessionToken(shopify) {
       console.log('[validateSessionToken] Session token valid for shop:', shop);
 
       // Check if we have an offline access token for this shop
-      const sessionId = shopify.api.session.getOfflineId(shop);
+      // Construct offline session ID: offline_<shop>
+      const sessionId = `offline_${shop}`;
       let session = null;
       
       try {
