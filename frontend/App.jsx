@@ -7,7 +7,7 @@ import "@shopify/polaris/build/esm/styles.css"
 import "./styles.css"
 import { useEffect, useState } from "react"
 import { QueryProvider, PolarisProvider, AppBridgeProvider } from "./components"
-import { Spinner, Frame } from "@shopify/polaris"
+import { Spinner } from "@shopify/polaris"
 
 // Custom router wrapper that handles initial redirection
 function CustomRouter({ pages }) {
@@ -142,11 +142,9 @@ function CustomRouter({ pages }) {
          <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
          <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
        </NavMenu>
-       <Frame>
-         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-           <Spinner accessibilityLabel="Loading" size="large" />
-         </div>
-       </Frame>
+       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+         <Spinner accessibilityLabel="Loading" size="large" />
+       </div>
      </>
    )
  }
@@ -164,23 +162,21 @@ function CustomRouter({ pages }) {
        <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
      </NavMenu>
 
-     <Frame>
-       <RouterRoutes>
-         {/* Handle home route with conditional redirect */}
-         {location.pathname === "/" && shouldRedirect ? (
-           <Route path="/" element={<Navigate to="/orders" replace />} />
-         ) : (
-           <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
-         )}
+     <RouterRoutes>
+       {/* Handle home route with conditional redirect */}
+       {location.pathname === "/" && shouldRedirect ? (
+         <Route path="/" element={<Navigate to="/orders" replace />} />
+       ) : (
+         <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
+       )}
 
-         {/* Add all other routes */}
-         {routeElements
-           .filter((route) => route.path !== "/")
-           .map((route) => (
-             <Route key={route.path} path={route.path} element={route.element} />
-           ))}
-       </RouterRoutes>
-     </Frame>
+       {/* Add all other routes */}
+       {routeElements
+         .filter((route) => route.path !== "/")
+         .map((route) => (
+           <Route key={route.path} path={route.path} element={route.element} />
+         ))}
+     </RouterRoutes>
    </>
  )
 }

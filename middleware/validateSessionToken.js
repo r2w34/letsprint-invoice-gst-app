@@ -59,7 +59,7 @@ export function validateSessionToken(shopify) {
       console.log('[validateSessionToken] Session token valid for shop:', shop);
 
       // Check if we have an offline access token for this shop
-      const sessionId = shopify.session.getOfflineId(shop);
+      const sessionId = shopify.api.session.getOfflineId(shop);
       let session = null;
       
       try {
