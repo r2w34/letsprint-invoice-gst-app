@@ -19,6 +19,7 @@ import { shopifyApi } from "@shopify/shopify-api";
 import { DeliveryMethod } from "@shopify/shopify-api";
 import privacyWebhooks from "./privacy.js";
 import SMTPConfig from "./Models/SMTPConfig.js";
+import { validateSessionToken } from './middleware/validateSessionToken.js';
 dotenv.config();
 
 
@@ -30,10 +31,10 @@ app.use(express.json());
 connectDB();
 
 
-// Ensure that SHOPIFY_SECRET is defined
-const SHOPIFY_SECRET = process.env.SHOPIFY_SECRET;
-if (!SHOPIFY_SECRET) {
-  console.error("SHOPIFY_SECRET is not defined. Please set the SHOPIFY_SECRET environment variable.");
+// Ensure that SHOPIFY_API_SECRET is defined
+const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET;
+if (!SHOPIFY_API_SECRET) {
+  console.error("SHOPIFY_API_SECRET is not defined. Please set the SHOPIFY_API_SECRET environment variable.");
   process.exit(1); // Stop execution if secret is not available
 }
 
@@ -52,7 +53,7 @@ app.post("/api/webhooks/orders/create", (req, res) => {
   const body = JSON.stringify(req.body);
 
   const hash = crypto
-    .createHmac("sha256", SHOPIFY_SECRET)
+    .createHmac("sha256", SHOPIFY_API_SECRET)
     .update(body, "utf8")
     .digest("base64");
 
@@ -127,10 +128,148 @@ const STATIC_PATH =
 
 
 // Set up Shopify authentication and webhook handling
-app.get(shopify.config.auth.path, shopify.auth.begin());
+// For embedded apps using Shopify managed installation and token exchange,
+// we handle authentication differently to avoid exitiframe errors
 
-// Use the shop routes
-app.use("/api/*", shopify.validateAuthenticatedSession());
+// Custom auth endpoint that handles both embedded and non-embedded contexts
+app.get(shopify.config.auth.path, async (req, res) => {
+  const shop = req.query.shop;
+  const embedded = req.query.embedded;
+  
+  console.log('[auth] Auth request received:', { shop, embedded });
+  
+  if (!shop) {
+    return res.status(400).json({ error: 'Shop parameter required' });
+  }
+  
+  // Check if app is already installed
+  const sessionId = shopify.session.getOfflineId(shop);
+  let session = null;
+  
+  try {
+    session = await shopify.config.sessionStorage.loadSession(sessionId);
+  } catch (error) {
+    console.error('[auth] Error loading session:', error.message);
+  }
+  
+  // If app is installed and we have an access token, redirect to app
+  if (session && session.accessToken) {
+    console.log('[auth] App already installed for shop:', shop);
+    const host = req.query.host;
+    const redirectUrl = host ? `/?shop=${shop}&host=${host}` : `/?shop=${shop}`;
+    return res.redirect(redirectUrl);
+  }
+  
+  // If not installed, need to install
+  // For embedded apps with Shopify managed installation, we should not reach here
+  // But if we do, provide a helpful response
+  console.log('[auth] App not installed for shop:', shop);
+  
+  // If this is an embedded context (which it should be), we can't do OAuth in iframe
+  // Instead, tell the frontend to use token exchange
+  if (embedded !== '0' && embedded !== 'false') {
+    return res.status(403).json({
+      error: 'App not installed or access token not found',
+      message: 'Please use token exchange to obtain access token',
+      requireTokenExchange: true,
+      shop: shop
+    });
+  }
+  
+  // For non-embedded or explicit OAuth request, use traditional OAuth
+  // This handles edge cases like initial installation via install URL
+  return shopify.auth.begin()(req, res);
+});
+
+// Token exchange endpoint for embedded apps
+// This allows the frontend to exchange a session token for an access token
+app.post('/api/auth/token-exchange', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+
+    if (!sessionToken) {
+      return res.status(400).json({ error: 'Session token required' });
+    }
+
+    console.log('[token-exchange] Received token exchange request');
+
+    // Decode session token to get shop (without full verification)
+    const parts = sessionToken.split('.');
+    if (parts.length !== 3) {
+      return res.status(400).json({ error: 'Invalid token format' });
+    }
+
+    const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf8');
+    const payload = JSON.parse(payloadJson);
+    const shop = payload.dest.replace('https://', '');
+
+    console.log('[token-exchange] Shop from token:', shop);
+
+    // Check if we already have an access token
+    const sessionId = shopify.session.getOfflineId(shop);
+    const existingSession = await shopify.config.sessionStorage.loadSession(sessionId);
+
+    if (existingSession && existingSession.accessToken) {
+      console.log('[token-exchange] Access token already exists for shop:', shop);
+      return res.json({ success: true, message: 'Access token already exists' });
+    }
+
+    // Exchange session token for access token using Shopify's token exchange API
+    const tokenExchangeUrl = `https://${shop}/admin/oauth/access_token`;
+    
+    const tokenExchangeResponse = await fetch(tokenExchangeUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: process.env.SHOPIFY_API_KEY,
+        client_secret: process.env.SHOPIFY_API_SECRET,
+        grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+        subject_token: sessionToken,
+        subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
+        requested_token_type: 'urn:shopify:params:oauth:token-type:offline-access-token',
+      }),
+    });
+
+    if (!tokenExchangeResponse.ok) {
+      const errorText = await tokenExchangeResponse.text();
+      console.error('[token-exchange] Token exchange failed:', errorText);
+      return res.status(500).json({ 
+        error: 'Token exchange failed',
+        details: errorText
+      });
+    }
+
+    const tokenData = await tokenExchangeResponse.json();
+    console.log('[token-exchange] Token exchange successful for shop:', shop);
+
+    // Store the access token in session storage
+    const session = {
+      id: sessionId,
+      shop: shop,
+      state: 'active',
+      isOnline: false,
+      accessToken: tokenData.access_token,
+      scope: tokenData.scope,
+    };
+
+    await shopify.config.sessionStorage.storeSession(session);
+    console.log('[token-exchange] Access token stored for shop:', shop);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[token-exchange] Error:', error);
+    res.status(500).json({ 
+      error: 'Token exchange failed',
+      message: error.message 
+    });
+  }
+});
+
+// Use the new session token validation middleware for all API routes
+app.use("/api/*", validateSessionToken(shopify));
 
 //fetch all products
 // app.get("/api/2025-01/products.json", async (_req, res) => {
@@ -206,46 +345,26 @@ app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
 // @ts-ignore
-// Modified catchall route to handle embedded apps properly
+// Catchall route for embedded apps - always serve the frontend
+// Let App Bridge and token exchange handle authentication
 app.use("/*", async (req, res, next) => {
   const shop = req.query.shop;
+  const host = req.query.host;
   
-  // If no shop parameter, serve the HTML - App Bridge will handle auth
-  if (!shop) {
-    return res
-      .status(200)
-      .set("Content-Type", "text/html")
-      .send(
-        readFileSync(join(STATIC_PATH, "index.html"))
-          .toString()
-          .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || "")
-      );
-  }
+  console.log('[catchall] Request received:', { shop, host, path: req.path });
   
-  // If shop parameter exists, check if app is installed
-  try {
-    await shopify.ensureInstalledOnShop()(req, res, () => {
-      return res
-        .status(200)
-        .set("Content-Type", "text/html")
-        .send(
-          readFileSync(join(STATIC_PATH, "index.html"))
-            .toString()
-            .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || "")
-        );
-    });
-  } catch (error) {
-    console.error("Error in ensureInstalledOnShop:", error);
-    // Even if there's an error, serve the HTML
-    return res
-      .status(200)
-      .set("Content-Type", "text/html")
-      .send(
-        readFileSync(join(STATIC_PATH, "index.html"))
-          .toString()
-          .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || "")
-      );
-  }
+  // For embedded apps with Shopify managed installation,
+  // we should NOT use ensureInstalledOnShop() as it triggers OAuth
+  // Instead, always serve the HTML and let App Bridge + token exchange handle auth
+  
+  return res
+    .status(200)
+    .set("Content-Type", "text/html")
+    .send(
+      readFileSync(join(STATIC_PATH, "index.html"))
+        .toString()
+        .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || "")
+    );
 });
 
 app.listen(PORT, () => {

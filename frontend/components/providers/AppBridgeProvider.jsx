@@ -1,135 +1,145 @@
-import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, createContext, useContext } from 'react';
+import { createApp } from '@shopify/app-bridge';
+import { authenticatedFetch } from '@shopify/app-bridge/utilities';
+
+// Create context for App Bridge
+const AppBridgeContext = createContext(null);
+
+export function useAppBridge() {
+  return useContext(AppBridgeContext);
+}
 
 /**
- * AppBridgeProvider that works with Shopify App Bridge CDN
- * Uses the shopify global object from the CDN script
+ * AppBridgeProvider using @shopify/app-bridge and @shopify/app-bridge-react v4
+ * This properly handles session tokens and authentication for embedded apps
  */
 export function AppBridgeProvider({ children }) {
   const location = useLocation();
-  const [appBridge, setAppBridge] = useState(null);
-
+  const navigate = useNavigate();
+  
   // Extract parameters from URL
   const queryParams = new URLSearchParams(location.search);
-  const host = queryParams.get('host');
-  const shop = queryParams.get('shop');
-
+  let host = queryParams.get('host');
+  
   // Get API key from meta tag
   const apiKey = document
     .querySelector('meta[name="shopify-api-key"]')
     ?.getAttribute('content');
+    
+  // If no host in URL, try to get it from window.shopify (set by Shopify)
+  if (!host && window.shopify) {
+    console.log('[AppBridgeProvider] Getting host from window.shopify');
+    host = window.shopify.config?.host;
+  }
 
+  // Create App Bridge instance
+  const app = useMemo(() => {
+    if (!apiKey) {
+      console.warn('[AppBridgeProvider] Missing API key');
+      return null;
+    }
+    
+    if (!host) {
+      console.warn('[AppBridgeProvider] Missing host parameter. App must be loaded from Shopify admin.');
+      return null;
+    }
+
+    const appBridgeConfig = {
+      apiKey: apiKey,
+      host: host,
+      forceRedirect: false,
+    };
+
+    console.log('[AppBridgeProvider] Initializing App Bridge with config:', {
+      apiKey: apiKey,
+      host: host,
+    });
+
+    try {
+      const appInstance = createApp(appBridgeConfig);
+      
+      // Set up authenticated fetch globally
+      if (!window.authenticatedFetch) {
+        window.authenticatedFetch = authenticatedFetch(appInstance);
+        console.log('✅ App Bridge authenticated fetch configured');
+      }
+      
+      return appInstance;
+    } catch (error) {
+      console.error('[AppBridgeProvider] Error creating App Bridge:', error);
+      return null;
+    }
+  }, [apiKey, host]);
+
+  // Handle token exchange on mount
   useEffect(() => {
-    console.log('[AppBridgeProvider] Initializing...');
-    console.log('[AppBridgeProvider] Host:', host);
-    console.log('[AppBridgeProvider] Shop:', shop);
-    console.log('[AppBridgeProvider] API Key:', apiKey);
+    if (app && window.authenticatedFetch) {
+      // Attempt token exchange to ensure we have an access token
+      handleTokenExchange();
+    }
+  }, [app]);
 
-    // Wait for the CDN script to load
-    const initAppBridge = async () => {
-      // Check if shopify global is available
-      if (typeof window.shopify === 'undefined') {
-        console.warn('[AppBridgeProvider] Shopify App Bridge CDN not loaded yet');
+  // Token exchange function
+  const handleTokenExchange = async () => {
+    try {
+      // Get fresh session token from App Bridge
+      const sessionToken = await app.idToken();
+      
+      if (!sessionToken) {
+        console.warn('[AppBridgeProvider] No session token available');
         return;
       }
 
-      // Only initialize if we have required params
-      if (!host || !apiKey) {
-        console.warn('[AppBridgeProvider] Missing host or apiKey');
-        setupFallbackFetch();
-        return;
+      console.log('[AppBridgeProvider] Attempting token exchange...');
+
+      // Call backend token exchange endpoint
+      const response = await fetch('/api/auth/token-exchange', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionToken }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Token exchange successful:', data.message || 'Access token obtained');
+      } else {
+        const error = await response.json();
+        console.warn('[AppBridgeProvider] Token exchange response:', error.message);
+        // Don't throw error - app might already have token
       }
-
-      try {
-        // Create App Bridge instance using CDN
-        const app = window.shopify.createApp({
-          apiKey: apiKey,
-          host: host,
-          forceRedirect: false,
-        });
-
-        setAppBridge(app);
-        console.log('✓ App Bridge initialized');
-
-        // Set up authenticatedFetch
-        setupAuthenticatedFetch(app);
-      } catch (error) {
-        console.error('[AppBridgeProvider] Error initializing App Bridge:', error);
-        setupFallbackFetch();
-      }
-    };
-
-    // Try to initialize immediately, or wait a bit
-    if (window.shopify) {
-      initAppBridge();
-    } else {
-      const timer = setTimeout(initAppBridge, 500);
-      return () => clearTimeout(timer);
+    } catch (error) {
+      console.error('[AppBridgeProvider] Token exchange error:', error);
+      // Don't throw - let the app try to function anyway
     }
-  }, [host, apiKey]);
-
-  const setupAuthenticatedFetch = (app) => {
-    if (window.authenticatedFetch) {
-      console.log('[AppBridgeProvider] authenticatedFetch already exists');
-      return;
-    }
-
-    window.authenticatedFetch = async (url, options = {}) => {
-      try {
-        // Get ID token from App Bridge
-        const token = await app.idToken();
-
-        // Add Authorization header
-        const headers = {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`,
-        };
-
-        console.log('[authenticatedFetch] Making request to:', url);
-
-        // Make the request
-        const response = await fetch(url, {
-          ...options,
-          headers,
-        });
-
-        if (!response.ok) {
-          console.warn(`[authenticatedFetch] Response ${response.status} for ${url}`);
-        }
-
-        return response;
-      } catch (error) {
-        console.error('[authenticatedFetch] Error:', error);
-        throw error;
-      }
-    };
-
-    console.log('✓ authenticatedFetch set up with App Bridge token');
   };
 
-  const setupFallbackFetch = () => {
-    if (window.authenticatedFetch) {
-      return;
+  // Handle navigation updates
+  useEffect(() => {
+    if (app) {
+      // App Bridge router integration if needed
+      console.log('[AppBridgeProvider] Location changed:', location.pathname);
     }
+  }, [app, location]);
 
-    // Fallback: add shop parameter to requests
-    window.authenticatedFetch = async (url, options = {}) => {
-      try {
-        const urlObj = new URL(url, window.location.origin);
-        if (shop) {
-          urlObj.searchParams.set('shop', shop);
-          console.log('[authenticatedFetch] Using fallback with shop parameter');
-        }
-        return fetch(urlObj.toString(), options);
-      } catch (error) {
-        console.error('[authenticatedFetch] Fallback error:', error);
-        // Last resort: just use fetch
-        return fetch(url, options);
-      }
-    };
+  // If no app instance, render children without App Bridge (fallback mode)
+  if (!app) {
+    console.warn('[AppBridgeProvider] No App Bridge instance, rendering without App Bridge');
+    
+    // Fallback fetch for non-embedded mode
+    if (!window.authenticatedFetch) {
+      window.authenticatedFetch = fetch.bind(window);
+    }
+    
+    return <>{children}</>;
+  }
 
-    console.log('⚠ Using fallback authenticatedFetch (no App Bridge)');
-  };
-
-  return <>{children}</>;
+  // Provide App Bridge instance via context
+  return (
+    <AppBridgeContext.Provider value={app}>
+      {children}
+    </AppBridgeContext.Provider>
+  );
 }

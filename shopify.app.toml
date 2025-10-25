@@ -1,0 +1,35 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "letsprint"
+client_id = ""  # Set via SHOPIFY_API_KEY environment variable
+application_url = "https://letsprint.indigenservices.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = ""  # Set your dev store URL here if using CLI
+
+[access_scopes]
+# Scopes required by the app
+scopes = "read_customers,write_files,read_locations,read_orders,read_products,write_products,read_product_listings,read_inventory,write_inventory,read_themes,write_themes,read_content,write_content"
+
+[auth]
+redirect_urls = [
+  "https://letsprint.indigenservices.com/api/auth/callback",
+  "https://letsprint.indigenservices.com/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+# Webhook subscriptions
+[[webhooks.subscriptions]]
+topics = ["app/uninstalled"]
+uri = "/api/webhooks"
+
+[[webhooks.subscriptions]]
+topics = ["orders/create"]
+uri = "/api/webhooks/orders/create"
+
+[pos]
+embedded = false
