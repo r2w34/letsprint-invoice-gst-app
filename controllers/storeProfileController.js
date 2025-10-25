@@ -2,14 +2,23 @@ import StoreProfile from "../Models/storeInfoModel.js";
 
 export const updateStoreProfile = async (req, res) => {
   try {
+    console.log('[updateStoreProfile] ========== REQUEST START ==========');
+    console.log('[updateStoreProfile] Full request body:', JSON.stringify(req.body, null, 2));
+    
     // Extract data from the request body
     const { shopId, storeProfile, images, addresses, socialLinks } = req.body;
 
+    console.log('[updateStoreProfile] Extracted shopId:', shopId);
+    console.log('[updateStoreProfile] Extracted storeProfile:', storeProfile);
+    console.log('[updateStoreProfile] Extracted images:', images);
+
     // Validate required fields
     if (!shopId) {
+      console.error('[updateStoreProfile] ERROR: shopId is missing');
       return res.status(400).json({ error: "Shop ID is required." });
     }
 
+    console.log('[updateStoreProfile] Searching for existing profile with shopId:', shopId);
     // Find the existing store profile by shopId or create new one
     let existingProfile = await StoreProfile.findOne({ shopId });
     
@@ -32,9 +41,12 @@ export const updateStoreProfile = async (req, res) => {
     }
 
     // Save the profile
+    console.log('[updateStoreProfile] Saving profile to database...');
     await existingProfile.save();
 
-    console.log('[updateStoreProfile] Store profile saved successfully for shopId:', shopId);
+    console.log('[updateStoreProfile] ✅ Store profile saved successfully for shopId:', shopId);
+    console.log('[updateStoreProfile] Saved profile data:', JSON.stringify(existingProfile, null, 2));
+    console.log('[updateStoreProfile] ========== REQUEST END ==========');
 
     // Return the updated profile
     res.status(200).json({
@@ -42,10 +54,11 @@ export const updateStoreProfile = async (req, res) => {
       profile: existingProfile,
     });
   } catch (error) {
-    console.error("Error updating store profile:", error);
+    console.error("[updateStoreProfile] ❌ ERROR:", error);
+    console.error("[updateStoreProfile] Error stack:", error.stack);
     res
       .status(500)
-      .json({ error: "An error occurred while updating the store profile." });
+      .json({ error: "An error occurred while updating the store profile.", details: error.message });
   }
 };
 

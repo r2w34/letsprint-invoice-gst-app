@@ -259,6 +259,13 @@ import {
  
  
   const handleSave = async () => {
+    console.log('[handleSave] ========== SAVE START ==========');
+    console.log('[handleSave] shopId:', shopId);
+    console.log('[handleSave] storeProfile:', storeProfile);
+    console.log('[handleSave] images:', images);
+    console.log('[handleSave] addresses:', addresses);
+    console.log('[handleSave] socialLinks:', socialLinks);
+    
     setIsSaving(true);
     try {
       const requestData = {
@@ -268,7 +275,8 @@ import {
         addresses,
         socialLinks,
       };
- 
+      
+      console.log('[handleSave] Sending request data:', JSON.stringify(requestData, null, 2));
  
       const response = await window.authenticatedFetch("/api/update-store-data", {
         method: "PUT",
@@ -278,24 +286,29 @@ import {
         body: JSON.stringify(requestData), // Properly serialize the body
       });
  
+      console.log('[handleSave] Response status:', response.status);
+      console.log('[handleSave] Response ok:', response.ok);
  
       if (response.ok) {
         const responseData = await response.json();
-        // console.log("Settings saved successfully:", responseData);
+        console.log("[handleSave] ✅ Settings saved successfully:", responseData);
         setIsSaving(false);
         setShowToast(true);
         setToastMessage("Settings saved successfully!");
       } else {
         const errorData = await response.json();
-        console.error(":", errorData);
+        console.error("[handleSave] ❌ Save failed:", errorData);
         setIsSaving(false);
         setShowToast(true);
         setToastMessage("Failed to save settings!");
       }
     } catch (error) {
-      console.error("Error while saving settings:", error);
+      console.error("[handleSave] ❌ Error while saving settings:", error);
       setIsSaving(false);
+      setShowToast(true);
+      setToastMessage("Error: " + error.message);
     }
+    console.log('[handleSave] ========== SAVE END ==========');
   };
  
  
