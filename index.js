@@ -15,7 +15,7 @@ import connectDB from './database/db.js';
 import routes from './routes/routes.js'; // Import the product routes
 import InvoiceTemplate from './Models/InvoiceTemplateModel.js';
 import StoreProfile from './Models/storeInfoModel.js';
-import { shopifyApi } from "@shopify/shopify-api";
+import { shopifyApi, Session } from "@shopify/shopify-api";
 import { DeliveryMethod } from "@shopify/shopify-api";
 import privacyWebhooks from "./privacy.js";
 import SMTPConfig from "./Models/SMTPConfig.js";
@@ -261,18 +261,19 @@ app.post('/api/auth/token-exchange', async (req, res) => {
     const tokenData = await tokenExchangeResponse.json();
     console.log('[token-exchange] Token exchange successful for shop:', shop);
 
-    // Store the access token in session storage
-    const session = {
+    // Store the access token in session storage using proper Session class
+    const session = new Session({
       id: sessionId,
       shop: shop,
       state: 'active',
       isOnline: false,
       accessToken: tokenData.access_token,
       scope: tokenData.scope,
-    };
+    });
 
     await shopify.config.sessionStorage.storeSession(session);
     console.log('[token-exchange] Access token stored for shop:', shop);
+    console.log('[token-exchange] Session stored with ID:', sessionId);
 
     res.json({ success: true });
   } catch (error) {
