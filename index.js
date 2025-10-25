@@ -219,27 +219,41 @@ app.post('/api/auth/token-exchange', async (req, res) => {
     // Exchange session token for access token using Shopify's token exchange API
     const tokenExchangeUrl = `https://${shop}/admin/oauth/access_token`;
     
+    console.log('[token-exchange] Calling Shopify token exchange endpoint:', tokenExchangeUrl);
+    
+    const tokenExchangeBody = {
+      client_id: process.env.SHOPIFY_API_KEY,
+      client_secret: process.env.SHOPIFY_API_SECRET,
+      grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+      subject_token: sessionToken,
+      subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
+      requested_token_type: 'urn:shopify:params:oauth:token-type:offline-access-token',
+    };
+    
+    console.log('[token-exchange] Request body:', {
+      ...tokenExchangeBody,
+      client_secret: '***REDACTED***',
+      subject_token: sessionToken.substring(0, 50) + '...'
+    });
+    
     const tokenExchangeResponse = await fetch(tokenExchangeUrl, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        client_id: process.env.SHOPIFY_API_KEY,
-        client_secret: process.env.SHOPIFY_API_SECRET,
-        grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
-        subject_token: sessionToken,
-        subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
-        requested_token_type: 'urn:shopify:params:oauth:token-type:offline-access-token',
-      }),
+      body: JSON.stringify(tokenExchangeBody),
     });
+
+    console.log('[token-exchange] Response status:', tokenExchangeResponse.status);
 
     if (!tokenExchangeResponse.ok) {
       const errorText = await tokenExchangeResponse.text();
-      console.error('[token-exchange] Token exchange failed:', errorText);
+      console.error('[token-exchange] Token exchange failed with status', tokenExchangeResponse.status);
+      console.error('[token-exchange] Error response:', errorText);
       return res.status(500).json({ 
         error: 'Token exchange failed',
+        status: tokenExchangeResponse.status,
         details: errorText
       });
     }
