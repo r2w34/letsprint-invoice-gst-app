@@ -2,12 +2,17 @@
 
 ## 🎯 What Was Fixed
 
-### 1. **Business Details Save** ✅
-**Problem**: "Failed to save settings!"
+### 1. **Frontend shopId Mismatch** ✅ **[CRITICAL]**
+**Problem**: "Failed to save settings!" - Data never saving
+**Cause**: Frontend sending numeric ID (92847593845) instead of domain (volter-store.myshopify.com)
+**Fix**: Changed `shopInfo.id` to `shopInfo.myshopify_domain` in settings.jsx
+
+### 2. **Business Details Save** ✅
+**Problem**: 404 error when profile doesn't exist
 **Cause**: MongoDB profile didn't exist, code returned 404 error
 **Fix**: Auto-create profile on first save
 
-### 2. **Logo/Signature Upload** ✅
+### 3. **Logo/Signature Upload** ✅
 **Problem**: "Upload failed: Upload failed"
 **Cause**: Missing AWS_BUCKET_NAME environment variable
 **Fix**: Added AWS_BUCKET_NAME=letsprint-invoices to server .env
@@ -25,23 +30,33 @@
 
 ## ✅ What's Working Now
 
-1. **Session Validation** → Fixed (previous commit)
-2. **Store Profile Creation** → Fixed (creates on first save)
-3. **AWS S3 Upload** → Fixed (bucket name configured)
-4. **MongoDB** → Running and accessible
-5. **PM2 App** → Online (PID: 2167881)
+1. **Frontend shopId** → ✅ Fixed (sends domain, not numeric ID) **[NEW]**
+2. **Session Validation** → ✅ Fixed (previous commit)
+3. **Store Profile Creation** → ✅ Fixed (creates on first save)
+4. **AWS S3 Upload** → ✅ Fixed (bucket name configured)
+5. **MongoDB** → ✅ Running and accessible
+6. **PM2 App** → ✅ Online (PID: 2178131) **[RESTARTED]**
+7. **Frontend** → ✅ Rebuilt and deployed **[NEW]**
 
 ---
 
-## 🧪 TEST NOW - 3 Simple Steps
+## 🧪 TEST NOW - 4 Simple Steps
+
+### Step 0: Clear Browser Cache FIRST! 🔥
+1. Press **Ctrl+Shift+Delete** (or Cmd+Shift+Delete on Mac)
+2. Select "Cached images and files"
+3. Click "Clear data"
+4. **Close and reopen browser**
 
 ### Step 1: Save Business Details
 1. Open app: https://admin.shopify.com/store/volter-store/apps/letsprint
 2. Go to Settings
-3. Fill any field (e.g., First Name)
-4. Click **Save**
+3. Open browser console (F12) and check logs
+4. Fill any field (e.g., First Name)
+5. Click **Save**
 
 **Expected**: ✅ Success message appears
+**Console should show**: "ShopID (myshopify_domain): volter-store.myshopify.com"
 
 ### Step 2: Upload Logo
 1. In Settings, click Upload Logo
