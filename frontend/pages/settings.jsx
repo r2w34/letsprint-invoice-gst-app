@@ -195,13 +195,14 @@ import {
       .then((response) => response.json())
       .then((data) => {
         const shopInfo = data?.data?.data?.[0];
-        // console.log("Shop info:", shopInfo);
+        console.log("Shop info:", shopInfo);
         setStoreDomain(shopInfo.domain || "");
         setEmail(shopInfo.email || "");
-        setshopId(shopInfo.id || "");
-        // console.log("Store domain:", storeDomain);
-        // console.log("Email:", email);
-        // console.log("ShopID:", shopId);
+        // Use myshopify_domain as shopId (e.g., volter-store.myshopify.com)
+        setshopId(shopInfo.myshopify_domain || shopInfo.domain || "");
+        console.log("Store domain:", shopInfo.domain);
+        console.log("Email:", shopInfo.email);
+        console.log("ShopID (myshopify_domain):", shopInfo.myshopify_domain);
       })
       .catch((error) => console.log("Error fetching shop info:", error));
   }, []);
