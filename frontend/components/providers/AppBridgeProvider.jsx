@@ -93,9 +93,32 @@ export function AppBridgeProvider({ children }) {
 
       console.log('[AppBridgeProvider] Session token obtained, length:', sessionToken.length);
 
-      // Note: Session tokens are automatically included in authenticatedFetch
-      // No need for explicit token exchange - the middleware handles it
-      console.log('✅ Session token ready for authenticated requests');
+      // Exchange session token for offline access token
+      // This is REQUIRED for embedded apps to work properly
+      console.log('[AppBridgeProvider] Exchanging session token for access token...');
+      
+      try {
+        const tokenExchangeResponse = await fetch('/api/auth/token-exchange', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionToken }),
+        });
+
+        if (tokenExchangeResponse.ok) {
+          const data = await tokenExchangeResponse.json();
+          console.log('[AppBridgeProvider] ✅ Token exchange successful:', data);
+          console.log('✅ Session token ready for authenticated requests');
+        } else {
+          const errorData = await tokenExchangeResponse.json();
+          console.warn('[AppBridgeProvider] Token exchange failed:', errorData);
+          // Continue anyway - maybe token already exists
+        }
+      } catch (exchangeError) {
+        console.warn('[AppBridgeProvider] Token exchange error:', exchangeError.message);
+        // Continue anyway - token might already exist
+      }
       
     } catch (error) {
       console.error('[AppBridgeProvider] Token retrieval error:', error);
