@@ -31,8 +31,9 @@ RUN npm install --only=production
 # Copy built application from builder
 COPY --from=builder /app .
 
-# Create uploads directory
-RUN mkdir -p /app/uploads
+# Create uploads directory with subdirectories
+RUN mkdir -p /app/uploads/logos /app/uploads/signatures && \
+    chmod -R 755 /app/uploads
 
 # Expose port
 EXPOSE 3000

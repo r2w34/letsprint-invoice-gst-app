@@ -26,6 +26,9 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+// Serve uploaded files as static content
+app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

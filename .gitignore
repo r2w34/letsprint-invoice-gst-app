@@ -75,3 +75,7 @@ credentials
 .shopify/
 README_OLD_LARAVEL.md
 *.tar.gz
+
+# Uploaded files
+uploads/
+!uploads/.gitkeep

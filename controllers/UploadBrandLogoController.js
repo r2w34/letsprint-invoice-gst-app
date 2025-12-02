@@ -1,27 +1,61 @@
 // Import required modules
 import dotenv from "dotenv";
 import multer from "multer";
-import AWS from "aws-sdk";
 import { v4 as uuid } from "uuid";
-
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from 'url';
 
 import StoreProfile from "../Models/storeInfoModel.js";
-// Configure AWS S3
+
 // Load environment variables
 dotenv.config();
 
-// Use uuidv4 for generating unique IDs
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+const logosDir = path.join(uploadsDir, 'logos');
+const signaturesDir = path.join(uploadsDir, 'signatures');
+
+// Ensure directories exist
+[uploadsDir, logosDir, signaturesDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 });
 
-// Multer configuration
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-// const uuid = require("uuid").v4;
+// Multer configuration for local storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // Determine destination based on fieldname
+    const dest = file.fieldname === 'logo' ? logosDir : signaturesDir;
+    cb(null, dest);
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename
+    const uniqueName = `${uuid()}-${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    // Accept only images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
+
+// Export the upload middleware
+export { upload };
 
 // Upload Logo API
 export const uploadLogo = async (req, res) => {
@@ -32,24 +66,16 @@ export const uploadLogo = async (req, res) => {
       return res.status(400).json({ success: false, message: "File is required." });
     }
 
-    // Generate unique file path for the logo
-    const fileName = `Shopify_Invoice_App_Logos/${uuid()}-${file.originalname}`;
-    const params = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: fileName,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    };
-
-    // Upload the logo to S3
-    console.log(`Uploading logo to S3: ${fileName}`);
-    const data = await s3.upload(params).promise();
+    // Generate URL for the uploaded logo
+    const logoURL = `${process.env.SHOPIFY_APP_URL}/uploads/logos/${file.filename}`;
+    
+    console.log(`Logo uploaded successfully: ${file.filename}`);
 
     // Respond with the uploaded logo URL
     res.status(200).json({
       success: true,
       message: "Logo uploaded successfully.",
-      logoURL: data.Location,
+      logoURL: logoURL,
     });
   } catch (err) {
     console.error("Error during upload process:", err);
@@ -75,12 +101,17 @@ export async function removeLogo(req, res) {
           .json({ success: false, message: "Store profile or logo not found." });
       }
   
-      // Extract the old logo key
-      const logoKey = storeProfile.images.logoURL.split('/').slice(-2).join('/');
-      console.log(`Deleting logo: ${logoKey}`);
+      // Extract the filename from URL
+      const logoURL = storeProfile.images.logoURL;
+      const filename = logoURL.split('/').pop();
+      const filePath = path.join(logosDir, filename);
+      
+      console.log(`Deleting logo file: ${filePath}`);
   
-      // Delete the logo from S3
-      await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: logoKey }).promise();
+      // Delete the logo file from local storage
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
   
       // Remove the logo URL from the database
       storeProfile.images.logoURL = ""; // Or set it to an empty string
@@ -105,24 +136,16 @@ export const uploadSignature = async (req, res) => {
       return res.status(400).json({ success: false, message: "File is required." });
     }
 
-    // Generate unique file path for the signature
-    const fileName = `Shopify_Invoice_App_Signatures/${uuid()}-${file.originalname}`;
-    const params = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: fileName,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    };
-
-    // Upload the signature to S3
-    console.log(`Uploading signature to S3: ${fileName}`);
-    const data = await s3.upload(params).promise();
+    // Generate URL for the uploaded signature
+    const signatureURL = `${process.env.SHOPIFY_APP_URL}/uploads/signatures/${file.filename}`;
+    
+    console.log(`Signature uploaded successfully: ${file.filename}`);
 
     // Respond with the uploaded signature URL
     res.status(200).json({
       success: true,
       message: "Signature uploaded successfully.",
-      signatureURL: data.Location,
+      signatureURL: signatureURL,
     });
   } catch (err) {
     console.error("Error during signature upload process:", err);
@@ -151,12 +174,17 @@ export const removeSignature = async (req, res) => {
         .json({ success: false, message: "Store profile or signature not found." });
     }
 
-    // Extract the old signature key
-    const signatureKey = storeProfile.images.signatureURL.split('/').slice(-2).join('/');
-    console.log(`Deleting signature: ${signatureKey}`);
+    // Extract the filename from URL
+    const signatureURL = storeProfile.images.signatureURL;
+    const filename = signatureURL.split('/').pop();
+    const filePath = path.join(signaturesDir, filename);
+    
+    console.log(`Deleting signature file: ${filePath}`);
 
-    // Delete the signature from S3
-    await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: signatureKey }).promise();
+    // Delete the signature file from local storage
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
 
     // Remove the signature URL from the database
     storeProfile.images.signatureURL = ""; // Or set it to an empty string

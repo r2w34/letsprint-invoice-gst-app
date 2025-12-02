@@ -32,8 +32,8 @@ import {
   removeLogo,
   uploadSignature,
   removeSignature,
+  upload as imageUpload,
 } from "../controllers/UploadBrandLogoController.js"; // Import the Upload Logo and image controller
-import multer from "multer";
 
 import { sendInvoiceAndUpload, uploadMiddleware } from "../controllers/sendInvoiceAndUpload.js";
 
@@ -49,9 +49,6 @@ import { changeTaxByApp , changeIsTaxIncluded } from "../controllers/taxControll
 
 
 
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -112,12 +109,12 @@ router.post("/api/change-send-on-order-placed", changeSendOnOrderPlaced);
 
 
 //upload logo for store
-router.post("/api/upload-logo", upload.single("logo"), uploadLogo);
+router.post("/api/upload-logo", imageUpload.single("logo"), uploadLogo);
 // removing the logo
 router.put("/api/remove-logo", removeLogo);
 
 // Upload Signature Route
-router.post("/api/upload-signature", upload.single("signature"), uploadSignature);
+router.post("/api/upload-signature", imageUpload.single("signature"), uploadSignature);
 
 // Remove Signature Route
 router.put("/api/remove-signature", removeSignature);

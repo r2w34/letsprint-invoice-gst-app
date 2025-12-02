@@ -8,11 +8,11 @@ A Shopify embedded app for generating GST-compliant invoices for Indian merchant
 
 - ✅ **GST-Compliant Invoices** - Generate invoices with proper GST calculations
 - ✅ **Shopify Integration** - Seamlessly integrates with Shopify Admin
-- ✅ **Custom Branding** - Upload logo and signature
+- ✅ **Custom Branding** - Upload logo and signature with local file storage
 - ✅ **Store Settings** - Manage store profile and GST details
 - ✅ **Order Management** - View and process orders
 - ✅ **Product Sync** - Automatic product synchronization
-- ✅ **S3 Storage** - Secure file storage on AWS S3
+- ✅ **Local File Storage** - Secure file storage on VPS disk
 - ✅ **MongoDB Database** - Scalable data storage
 
 ---
@@ -24,8 +24,8 @@ Before you begin, ensure you have:
 - **Node.js** 18+ installed
 - **MongoDB** running locally or remote connection
 - **Shopify Partner Account** with app credentials
-- **AWS Account** with S3 bucket (for file uploads)
 - **Domain** with SSL certificate (for production)
+- **VPS/Server** with sufficient disk space for uploaded files
 
 ---
 
@@ -76,17 +76,16 @@ NODE_ENV=production
 # Shopify Scopes
 SCOPES=write_products,read_orders,write_customers,read_products
 
-# AWS S3
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=ap-south-1
-S3_BUCKET_NAME=your_bucket_name
+# App URL (for generating file URLs)
+SHOPIFY_APP_URL=https://your-domain.com
 ```
 
 **Important Notes:**
 - ⚠️ Use `MONGO_URI` NOT `MONGODB_URI` (the code uses MONGO_URI)
 - ⚠️ Set `NODE_ENV=production` to serve the built frontend
 - ⚠️ Set `PORT=3000` (default port for the app)
+- ⚠️ Set `SHOPIFY_APP_URL` to your app's public URL (for file access)
+- 📁 Uploaded files stored locally in `/uploads/` directory
 
 ### 4. Build Frontend
 
@@ -165,6 +164,10 @@ letsprint-invoice-gst-app/
 ├── .env                    # Environment variables (create from .env.example)
 ├── database.sqlite         # SQLite session storage (auto-created)
 │
+├── uploads/                # Uploaded files (local storage)
+│   ├── logos/             # Store logo images
+│   └── signatures/        # Signature images
+│
 ├── frontend/               # React frontend
 │   ├── dist/              # Built production files (generated)
 │   ├── pages/             # App pages (Settings, Orders, etc.)
@@ -176,7 +179,8 @@ letsprint-invoice-gst-app/
 │   └── package.json       # Frontend dependencies
 │
 ├── controllers/           # Business logic
-│   └── storeController.js # Store profile management
+│   ├── storeController.js            # Store profile management
+│   └── UploadBrandLogoController.js  # File upload handling
 │
 ├── database/              # Database configuration
 │   └── db.js             # MongoDB connection
