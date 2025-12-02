@@ -2,12 +2,12 @@
 
 import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { NavMenu } from "@shopify/app-bridge-react"
 import "@shopify/polaris/build/esm/styles.css"
 import "./styles.css"
 import { useEffect, useState } from "react"
 import { QueryProvider, PolarisProvider, AppBridgeProvider } from "./components"
 import { Spinner } from "@shopify/polaris"
+import Layout from "./components/Layout"
 
 // Custom router wrapper that handles initial redirection
 function CustomRouter({ pages }) {
@@ -135,37 +135,16 @@ function CustomRouter({ pages }) {
  // If loading, show spinner
  if (loading && location.pathname === "/") {
    return (
-     <>
-       <NavMenu>
-         <a href="/" rel="home" />
-         <a href="/orders">{t("NavigationMenu.orders")}</a>
-         <a href="/products">{t("NavigationMenu.products")}</a>
-         <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
-         <a href="/settings">{t("NavigationMenu.settings")}</a>
-         <a href="/contactus">{t("NavigationMenu.contactus")}</a>
-         <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
-         <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
-       </NavMenu>
+     <Layout>
        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
          <Spinner accessibilityLabel="Loading" size="large" />
        </div>
-     </>
+     </Layout>
    )
  }
 
  return (
-   <>
-     <NavMenu>
-       <a href="/" rel="home" />
-       <a href="/orders">{t("NavigationMenu.orders")}</a>
-       <a href="/products">{t("NavigationMenu.products")}</a>
-       <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
-       <a href="/settings">{t("NavigationMenu.settings")}</a>
-       <a href="/contactus">{t("NavigationMenu.contactus")}</a>
-       <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
-       <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
-     </NavMenu>
-
+   <Layout>
      <RouterRoutes>
        {/* Handle home route with conditional redirect */}
        {location.pathname === "/" && shouldRedirect ? (
@@ -181,7 +160,7 @@ function CustomRouter({ pages }) {
            <Route key={route.path} path={route.path} element={route.element} />
          ))}
      </RouterRoutes>
-   </>
+   </Layout>
  )
 }
 
