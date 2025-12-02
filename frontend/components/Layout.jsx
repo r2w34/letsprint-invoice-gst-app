@@ -2,14 +2,14 @@ import { Frame, Navigation } from "@shopify/polaris";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  HomeIcon,
-  OrderIcon,
-  ProductIcon,
-  SettingsIcon,
-  EmailIcon,
-  CreditCardIcon,
-  FileIcon,
-  QuestionCircleIcon
+  HomeMajor,
+  OrdersMajor,
+  ProductsMajor,
+  SettingsMajor,
+  EmailMajor,
+  CreditCardMajor,
+  NoteMajor,
+  QuestionMarkMajor
 } from "@shopify/polaris-icons";
 
 export default function Layout({ children }) {
@@ -21,56 +21,56 @@ export default function Layout({ children }) {
     {
       url: "/",
       label: "Home",
-      icon: HomeIcon,
+      icon: HomeMajor,
       selected: location.pathname === "/",
       onClick: () => navigate("/")
     },
     {
       url: "/orders",
       label: t("NavigationMenu.orders"),
-      icon: OrderIcon,
+      icon: OrdersMajor,
       selected: location.pathname === "/orders",
       onClick: () => navigate("/orders")
     },
     {
       url: "/products",
       label: t("NavigationMenu.products"),
-      icon: ProductIcon,
+      icon: ProductsMajor,
       selected: location.pathname === "/products",
       onClick: () => navigate("/products")
     },
     {
       url: "/invoice_templates",
       label: t("NavigationMenu.invoice_templates"),
-      icon: FileIcon,
+      icon: NoteMajor,
       selected: location.pathname === "/invoice_templates",
       onClick: () => navigate("/invoice_templates")
     },
     {
       url: "/settings",
       label: t("NavigationMenu.settings"),
-      icon: SettingsIcon,
+      icon: SettingsMajor,
       selected: location.pathname === "/settings",
       onClick: () => navigate("/settings")
     },
     {
       url: "/email-settings",
       label: t("NavigationMenu.email-settings"),
-      icon: EmailIcon,
+      icon: EmailMajor,
       selected: location.pathname === "/email-settings",
       onClick: () => navigate("/email-settings")
     },
     {
       url: "/plans_and_billings",
       label: t("NavigationMenu.plans_and_billings"),
-      icon: CreditCardIcon,
+      icon: CreditCardMajor,
       selected: location.pathname === "/plans_and_billings",
       onClick: () => navigate("/plans_and_billings")
     },
     {
       url: "/contactus",
       label: t("NavigationMenu.contactus"),
-      icon: QuestionCircleIcon,
+      icon: QuestionMarkMajor,
       selected: location.pathname === "/contactus",
       onClick: () => navigate("/contactus")
     }
