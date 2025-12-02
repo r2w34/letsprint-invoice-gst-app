@@ -194,7 +194,7 @@ export default function InvoiceTemplatePage() {
           </Layout>
           <FooterHelp style={{ marginTop: "40px" }}>
             Didn't find what you were looking for? Reach out to support at{" "}
-            <Link url="mailto:support@delhidigital.co">support@delhidigital.co</Link>
+            <Link url="mailto:support@mygstbill.com">support@mygstbill.com</Link>
           </FooterHelp>
           {showToast && (
             <div

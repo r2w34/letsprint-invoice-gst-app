@@ -116,7 +116,7 @@ export const sendInvoiceAndUpload = async (req, res) => {
 
       <!-- Footer -->
       <div style="background: #0bacb3; padding: 15px; color: white; font-weight: bold;">
-        Powered By: Delhi Digital Co.
+        Powered By: MyGSTBill
       </div>
 
     </div>

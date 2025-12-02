@@ -175,7 +175,7 @@ export default function HomePage() {
                 }}
                 secondaryAction={{
                   content: "Learn more",
-                  url: "https://delhidigital.co",
+                  url: "https://shopconnect.mygstbill.com",
                   onAction: () => {
                     // console.log("Learn more clicked");
                     // You can also handle navigation or additional logic here

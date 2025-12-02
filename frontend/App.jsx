@@ -136,28 +136,6 @@ function CustomRouter({ pages }) {
  if (loading && location.pathname === "/") {
    return (
      <>
-       <div style={{ display: "none" }}>
-         <NavMenu>
-           <a href="/" rel="home" />
-           <a href="/orders">{t("NavigationMenu.orders")}</a>
-           <a href="/products">{t("NavigationMenu.products")}</a>
-           <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
-           <a href="/settings">{t("NavigationMenu.settings")}</a>
-           <a href="/contactus">{t("NavigationMenu.contactus")}</a>
-           <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
-           <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
-         </NavMenu>
-       </div>
-       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-         <Spinner accessibilityLabel="Loading" size="large" />
-       </div>
-     </>
-   )
- }
-
- return (
-   <>
-     <div style={{ display: "none" }}>
        <NavMenu>
          <a href="/" rel="home" />
          <a href="/orders">{t("NavigationMenu.orders")}</a>
@@ -168,7 +146,25 @@ function CustomRouter({ pages }) {
          <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
          <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
        </NavMenu>
-     </div>
+       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+         <Spinner accessibilityLabel="Loading" size="large" />
+       </div>
+     </>
+   )
+ }
+
+ return (
+   <>
+     <NavMenu>
+       <a href="/" rel="home" />
+       <a href="/orders">{t("NavigationMenu.orders")}</a>
+       <a href="/products">{t("NavigationMenu.products")}</a>
+       <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
+       <a href="/settings">{t("NavigationMenu.settings")}</a>
+       <a href="/contactus">{t("NavigationMenu.contactus")}</a>
+       <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
+       <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
+     </NavMenu>
 
      <RouterRoutes>
        {/* Handle home route with conditional redirect */}
