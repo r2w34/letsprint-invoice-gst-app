@@ -2,7 +2,7 @@
 
 name = "letsprint"
 client_id = ""  # Set via SHOPIFY_API_KEY environment variable
-application_url = "https://letsprint.indigenservices.com"
+application_url = "https://shopconnect.mygstbill.com"
 embedded = true
 
 [build]
@@ -15,8 +15,8 @@ scopes = "read_customers,write_files,read_locations,read_orders,read_products,wr
 
 [auth]
 redirect_urls = [
-  "https://letsprint.indigenservices.com/api/auth/callback",
-  "https://letsprint.indigenservices.com/auth/callback"
+  "https://shopconnect.mygstbill.com/api/auth/callback",
+  "https://shopconnect.mygstbill.com/auth/callback"
 ]
 
 [webhooks]

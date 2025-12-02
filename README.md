@@ -429,12 +429,6 @@ exit
 
 ## 🆘 Support
 
-### Documentation
-
-- See `COMPLETE_DEPLOYMENT_SUMMARY.md` for full deployment guide
-- See `AUTHENTICATION_EXPLANATION.md` for auth details
-- See `BUGS_FOUND_AND_FIXED.md` for known issues
-
 ### Getting Help
 
 1. Check logs: `pm2 logs letsprint`
@@ -481,4 +475,4 @@ For support or inquiries, please contact the development team.
 
 ---
 
-*Last updated: October 25, 2025*
+*Last updated: December 2, 2024*

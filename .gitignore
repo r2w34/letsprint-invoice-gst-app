@@ -74,3 +74,4 @@ credentials
 # Shopify CLI
 .shopify/
 README_OLD_LARAVEL.md
+*.tar.gz
