@@ -7,6 +7,7 @@ import "./styles.css"
 import { useEffect, useState } from "react"
 import { QueryProvider, PolarisProvider, AppBridgeProvider } from "./components"
 import { Spinner } from "@shopify/polaris"
+import { NavMenu } from "@shopify/app-bridge-react"
 
 // Custom router wrapper that handles initial redirection
 function CustomRouter({ pages }) {
@@ -141,21 +142,35 @@ function CustomRouter({ pages }) {
  }
 
  return (
-   <RouterRoutes>
-     {/* Handle home route with conditional redirect */}
-     {location.pathname === "/" && shouldRedirect ? (
-       <Route path="/" element={<Navigate to="/orders" replace />} />
-     ) : (
-       <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
-     )}
+   <>
+     {/* App Bridge Navigation Menu */}
+     <NavMenu>
+       <a href="/" rel="home">Home</a>
+       <a href="/orders">Orders</a>
+       <a href="/products">Products</a>
+       <a href="/invoice_templates">Invoice Templates</a>
+       <a href="/settings">Settings</a>
+       <a href="/email-settings">Email Settings</a>
+       <a href="/plans_and_billings">Plans & Billing</a>
+       <a href="/contactus">Contact Us</a>
+     </NavMenu>
 
-     {/* Add all other routes */}
-     {routeElements
-       .filter((route) => route.path !== "/")
-       .map((route) => (
-         <Route key={route.path} path={route.path} element={route.element} />
-       ))}
-   </RouterRoutes>
+     <RouterRoutes>
+       {/* Handle home route with conditional redirect */}
+       {location.pathname === "/" && shouldRedirect ? (
+         <Route path="/" element={<Navigate to="/orders" replace />} />
+       ) : (
+         <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
+       )}
+
+       {/* Add all other routes */}
+       {routeElements
+         .filter((route) => route.path !== "/")
+         .map((route) => (
+           <Route key={route.path} path={route.path} element={route.element} />
+         ))}
+     </RouterRoutes>
+   </>
  )
 }
 
