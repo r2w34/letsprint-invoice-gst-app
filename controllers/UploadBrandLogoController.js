@@ -67,12 +67,9 @@ export const uploadLogo = async (req, res) => {
     }
 
     // Generate URL for the uploaded logo
-    // Use SHOPIFY_APP_URL if set, otherwise construct from HOST
-    const baseURL = process.env.SHOPIFY_APP_URL || `https://${process.env.HOST}`;
-    const logoURL = `${baseURL}/uploads/logos/${file.filename}`;
-    
+    const logoURL = `${process.env.SHOPIFY_APP_URL}/uploads/logos/${file.filename}`;
+
     console.log(`Logo uploaded successfully: ${file.filename}`);
-    console.log(`Logo URL: ${logoURL}`);
 
     // Respond with the uploaded logo URL
     res.status(200).json({
@@ -140,12 +137,9 @@ export const uploadSignature = async (req, res) => {
     }
 
     // Generate URL for the uploaded signature
-    // Use SHOPIFY_APP_URL if set, otherwise construct from HOST
-    const baseURL = process.env.SHOPIFY_APP_URL || `https://${process.env.HOST}`;
-    const signatureURL = `${baseURL}/uploads/signatures/${file.filename}`;
-    
+    const signatureURL = `${process.env.SHOPIFY_APP_URL}/uploads/signatures/${file.filename}`;
+
     console.log(`Signature uploaded successfully: ${file.filename}`);
-    console.log(`Signature URL: ${signatureURL}`);
 
     // Respond with the uploaded signature URL
     res.status(200).json({

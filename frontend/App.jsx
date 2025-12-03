@@ -135,24 +135,35 @@ function CustomRouter({ pages }) {
  // If loading, show spinner
  if (loading && location.pathname === "/") {
    return (
-     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-       <Spinner accessibilityLabel="Loading" size="large" />
-     </div>
+     <>
+       <NavMenu>
+         <a href="/" rel="home" />
+         <a href="/orders">{t("NavigationMenu.orders")}</a>
+         <a href="/products">{t("NavigationMenu.products")}</a>
+         <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
+         <a href="/settings">{t("NavigationMenu.settings")}</a>
+         <a href="/contactus">{t("NavigationMenu.contactus")}</a>
+         <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
+         <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
+       </NavMenu>
+       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+         <Spinner accessibilityLabel="Loading" size="large" />
+       </div>
+     </>
    )
  }
 
  return (
    <>
-     {/* App Bridge Navigation Menu */}
      <NavMenu>
-       <a href="/" rel="home">Home</a>
-       <a href="/orders">Orders</a>
-       <a href="/products">Products</a>
-       <a href="/invoice_templates">Invoice Templates</a>
-       <a href="/settings">Settings</a>
-       <a href="/email-settings">Email Settings</a>
-       <a href="/plans_and_billings">Plans & Billing</a>
-       <a href="/contactus">Contact Us</a>
+       <a href="/" rel="home" />
+       <a href="/orders">{t("NavigationMenu.orders")}</a>
+       <a href="/products">{t("NavigationMenu.products")}</a>
+       <a href="/invoice_templates">{t("NavigationMenu.invoice_templates")}</a>
+       <a href="/settings">{t("NavigationMenu.settings")}</a>
+       <a href="/contactus">{t("NavigationMenu.contactus")}</a>
+       <a href="/email-settings">{t("NavigationMenu.email-settings")}</a>
+       <a href="/plans_and_billings">{t("NavigationMenu.plans_and_billings")}</a>
      </NavMenu>
 
      <RouterRoutes>
