@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install LetsPrint GST Invoice App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 28px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #fc8181;
+        }
+
+        .error-message {
+            color: #fc8181;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: #e6fffa;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .help-text {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .help-text strong {
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">LP</div>
+        <h1>Install LetsPrint GST Invoice</h1>
+        <p>Generate professional GST invoices for your Shopify orders automatically</p>
+
+        <form id="installForm">
+            <div class="form-group">
+                <label for="shopDomain">Your Shopify Store URL</label>
+                <input
+                    type="text"
+                    id="shopDomain"
+                    name="shop"
+                    placeholder="mystore.myshopify.com"
+                    required
+                    autocomplete="off"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                />
+                <div class="error-message" id="errorMessage">
+                    Please enter a valid Shopify store URL
+                </div>
+            </div>
+
+            <button type="submit" id="installButton">
+                <span id="buttonText">Install App</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <div class="feature-text">
+                    <strong>Automatic GST Invoices</strong> - Generate invoices instantly for every order
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <div class="feature-text">
+                    <strong>Customizable Templates</strong> - Choose from multiple professional designs
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <div class="feature-text">
+                    <strong>Email Integration</strong> - Send invoices directly to customers
+                </div>
+            </div>
+        </div>
+
+        <div class="help-text">
+            <strong>Need help?</strong><br>
+            Your store URL usually looks like <code>yourstore.myshopify.com</code>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('installForm');
+        const shopInput = document.getElementById('shopDomain');
+        const errorMessage = document.getElementById('errorMessage');
+        const installButton = document.getElementById('installButton');
+        const buttonText = document.getElementById('buttonText');
+        const spinner = document.getElementById('spinner');
+
+        // Validate Shopify domain format
+        function isValidShopifyDomain(domain) {
+            // Remove protocol if present
+            domain = domain.replace(/^https?:\/\//, '');
+            // Remove trailing slash
+            domain = domain.replace(/\/$/, '');
+            // Remove .com if present (we'll add it back)
+            domain = domain.replace(/\.myshopify\.com$/, '');
+            
+            // Check if it contains valid characters
+            const regex = /^[a-zA-Z0-9][a-zA-Z0-9\-]*$/;
+            return regex.test(domain);
+        }
+
+        // Normalize shop domain
+        function normalizeShopDomain(domain) {
+            // Remove protocol
+            domain = domain.replace(/^https?:\/\//, '');
+            // Remove trailing slash
+            domain = domain.replace(/\/$/, '');
+            // If it doesn't end with .myshopify.com, add it
+            if (!domain.endsWith('.myshopify.com')) {
+                // Remove .com if user typed it wrong
+                domain = domain.replace(/\.com$/, '');
+                domain = domain + '.myshopify.com';
+            }
+            return domain.toLowerCase();
+        }
+
+        // Clear error on input
+        shopInput.addEventListener('input', function() {
+            shopInput.classList.remove('error');
+            errorMessage.classList.remove('show');
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const rawDomain = shopInput.value.trim();
+
+            // Validate domain
+            if (!rawDomain) {
+                showError('Please enter your Shopify store URL');
+                return;
+            }
+
+            // Extract and validate the shop name part
+            const shopName = rawDomain
+                .replace(/^https?:\/\//, '')
+                .replace(/\/$/, '')
+                .replace(/\.myshopify\.com$/, '');
+
+            if (!isValidShopifyDomain(shopName)) {
+                showError('Please enter a valid Shopify store URL (e.g., mystore.myshopify.com)');
+                return;
+            }
+
+            // Normalize the domain
+            const normalizedDomain = normalizeShopDomain(rawDomain);
+
+            // Show loading state
+            installButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+
+            // Redirect to OAuth flow
+            window.location.href = `/api/auth?shop=${encodeURIComponent(normalizedDomain)}`;
+        });
+
+        function showError(message) {
+            shopInput.classList.add('error');
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            shopInput.focus();
+        }
+
+        // Auto-focus on input
+        window.addEventListener('load', function() {
+            shopInput.focus();
+        });
+
+        // Handle paste event to clean up pasted URLs
+        shopInput.addEventListener('paste', function(e) {
+            setTimeout(function() {
+                const value = shopInput.value;
+                const normalized = value
+                    .replace(/^https?:\/\//, '')
+                    .replace(/\/$/, '');
+                shopInput.value = normalized;
+            }, 10);
+        });
+    </script>
+</body>
+</html>

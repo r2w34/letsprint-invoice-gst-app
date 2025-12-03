@@ -138,19 +138,53 @@ const STATIC_PATH =
 // For embedded apps using Shopify managed installation and token exchange,
 // we handle authentication differently to avoid exitiframe errors
 
-// Custom auth endpoint that handles both embedded and non-embedded contexts
+// OAuth callback handler - handles the redirect back from Shopify after authorization
+app.get(shopify.config.auth.callbackPath, async (req, res) => {
+  try {
+    console.log('[auth-callback] OAuth callback received');
+    
+    // Use Shopify's built-in callback handler
+    await shopify.auth.callback()(req, res, async () => {
+      const { session } = res.locals.shopify;
+      
+      console.log('[auth-callback] OAuth successful for shop:', session.shop);
+      console.log('[auth-callback] Access token obtained');
+      
+      // After successful OAuth, redirect to the embedded app
+      const host = req.query.host;
+      const shop = session.shop;
+      
+      // Redirect to the app with shop and host parameters
+      // This will load the embedded app properly
+      const redirectUrl = `/?shop=${shop}${host ? `&host=${host}` : ''}`;
+      console.log('[auth-callback] Redirecting to:', redirectUrl);
+      
+      res.redirect(redirectUrl);
+    });
+  } catch (error) {
+    console.error('[auth-callback] OAuth callback error:', error);
+    res.status(500).send('Authentication failed. Please try again.');
+  }
+});
+
+// Custom auth endpoint that initiates OAuth flow
 app.get(shopify.config.auth.path, async (req, res) => {
   const shop = req.query.shop;
-  const embedded = req.query.embedded;
   
-  console.log('[auth] Auth request received:', { shop, embedded });
+  console.log('[auth] Auth request received for shop:', shop);
   
   if (!shop) {
-    return res.status(400).json({ error: 'Shop parameter required' });
+    console.log('[auth] No shop parameter, redirecting to install page');
+    return res.redirect('/install');
+  }
+  
+  // Validate shop domain format
+  if (!shop.includes('.myshopify.com')) {
+    console.log('[auth] Invalid shop domain:', shop);
+    return res.status(400).send('Invalid shop domain. Must be a myshopify.com domain.');
   }
   
   // Check if app is already installed
-  // Use offline session ID format: offline_{shop}
   const sessionId = `offline_${shop}`;
   let session = null;
   
@@ -168,25 +202,16 @@ app.get(shopify.config.auth.path, async (req, res) => {
     return res.redirect(redirectUrl);
   }
   
-  // If not installed, need to install
-  // For embedded apps with Shopify managed installation, we should not reach here
-  // But if we do, provide a helpful response
-  console.log('[auth] App not installed for shop:', shop);
+  // If not installed, initiate OAuth flow
+  console.log('[auth] Starting OAuth flow for shop:', shop);
   
-  // If this is an embedded context (which it should be), we can't do OAuth in iframe
-  // Instead, tell the frontend to use token exchange
-  if (embedded !== '0' && embedded !== 'false') {
-    return res.status(403).json({
-      error: 'App not installed or access token not found',
-      message: 'Please use token exchange to obtain access token',
-      requireTokenExchange: true,
-      shop: shop
-    });
+  try {
+    // Use Shopify's built-in OAuth begin handler
+    return shopify.auth.begin()(req, res);
+  } catch (error) {
+    console.error('[auth] Error starting OAuth:', error);
+    return res.status(500).send('Failed to start installation. Please try again.');
   }
-  
-  // For non-embedded or explicit OAuth request, use traditional OAuth
-  // This handles edge cases like initial installation via install URL
-  return shopify.auth.begin()(req, res);
 });
 
 // Token exchange endpoint for embedded apps
@@ -378,20 +403,56 @@ app.get("/api/2024-10/shop.json", validateSessionToken, async (req, res) => {
 // });
 
 app.use(shopify.cspHeaders());
+
+// Serve public static files (like install.html) without CSP restrictions
+app.use('/install', express.static(join(process.cwd(), 'public')));
+
+// Serve the installation page when accessing /install route
+app.get('/install', (req, res) => {
+  console.log('[install] Installation page requested');
+  return res.sendFile(join(process.cwd(), 'public', 'install.html'));
+});
+
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
 // @ts-ignore
-// Catchall route for embedded apps - always serve the frontend
-// Let App Bridge and token exchange handle authentication
+// Catchall route with proper installation check
 app.use("/*", async (req, res, next) => {
   const shop = req.query.shop;
   const host = req.query.host;
   
   console.log('[catchall] Request received:', { shop, host, path: req.path });
   
-  // For embedded apps with Shopify managed installation,
-  // we should NOT use ensureInstalledOnShop() as it triggers OAuth
-  // Instead, always serve the HTML and let App Bridge + token exchange handle auth
+  // If no shop parameter, show installation page
+  if (!shop) {
+    console.log('[catchall] No shop parameter, serving installation page');
+    return res.redirect('/install');
+  }
+  
+  // Validate shop format
+  if (typeof shop !== 'string' || !shop.includes('.myshopify.com')) {
+    console.log('[catchall] Invalid shop parameter:', shop);
+    return res.redirect('/install');
+  }
+  
+  // Check if app is installed for this shop
+  const sessionId = `offline_${shop}`;
+  let session = null;
+  
+  try {
+    session = await shopify.config.sessionStorage.loadSession(sessionId);
+  } catch (error) {
+    console.error('[catchall] Error loading session:', error.message);
+  }
+  
+  // If not installed, redirect to OAuth
+  if (!session || !session.accessToken) {
+    console.log('[catchall] App not installed, redirecting to OAuth');
+    return res.redirect(`/api/auth?shop=${encodeURIComponent(shop)}`);
+  }
+  
+  // App is installed, serve the embedded app
+  console.log('[catchall] App installed, serving embedded app for shop:', shop);
   
   return res
     .status(200)
