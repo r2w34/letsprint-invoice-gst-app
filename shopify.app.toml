@@ -33,3 +33,39 @@ uri = "/api/webhooks/orders/create"
 
 [pos]
 embedded = false
+
+[app_proxy]
+# Optional: Configure app proxy settings if needed
+
+# Navigation links that appear in Shopify admin sidebar
+[[app_home.navigation]]
+label = "Home"
+destination = "/"
+
+[[app_home.navigation]]
+label = "Orders"
+destination = "/orders"
+
+[[app_home.navigation]]
+label = "Products"
+destination = "/products"
+
+[[app_home.navigation]]
+label = "Invoice Templates"
+destination = "/invoice_templates"
+
+[[app_home.navigation]]
+label = "Settings"
+destination = "/settings"
+
+[[app_home.navigation]]
+label = "Email Settings"
+destination = "/email-settings"
+
+[[app_home.navigation]]
+label = "Plans & Billing"
+destination = "/plans_and_billings"
+
+[[app_home.navigation]]
+label = "Contact Us"
+destination = "/contactus"

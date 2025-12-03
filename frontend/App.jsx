@@ -7,7 +7,6 @@ import "./styles.css"
 import { useEffect, useState } from "react"
 import { QueryProvider, PolarisProvider, AppBridgeProvider } from "./components"
 import { Spinner } from "@shopify/polaris"
-import Layout from "./components/Layout"
 
 // Custom router wrapper that handles initial redirection
 function CustomRouter({ pages }) {
@@ -135,32 +134,28 @@ function CustomRouter({ pages }) {
  // If loading, show spinner
  if (loading && location.pathname === "/") {
    return (
-     <Layout>
-       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-         <Spinner accessibilityLabel="Loading" size="large" />
-       </div>
-     </Layout>
+     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+       <Spinner accessibilityLabel="Loading" size="large" />
+     </div>
    )
  }
 
  return (
-   <Layout>
-     <RouterRoutes>
-       {/* Handle home route with conditional redirect */}
-       {location.pathname === "/" && shouldRedirect ? (
-         <Route path="/" element={<Navigate to="/orders" replace />} />
-       ) : (
-         <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
-       )}
+   <RouterRoutes>
+     {/* Handle home route with conditional redirect */}
+     {location.pathname === "/" && shouldRedirect ? (
+       <Route path="/" element={<Navigate to="/orders" replace />} />
+     ) : (
+       <Route path="/" element={routeElements.find((route) => route.path === "/")?.element} />
+     )}
 
-       {/* Add all other routes */}
-       {routeElements
-         .filter((route) => route.path !== "/")
-         .map((route) => (
-           <Route key={route.path} path={route.path} element={route.element} />
-         ))}
-     </RouterRoutes>
-   </Layout>
+     {/* Add all other routes */}
+     {routeElements
+       .filter((route) => route.path !== "/")
+       .map((route) => (
+         <Route key={route.path} path={route.path} element={route.element} />
+       ))}
+   </RouterRoutes>
  )
 }
 

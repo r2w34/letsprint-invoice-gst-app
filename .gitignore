@@ -79,3 +79,6 @@ README_OLD_LARAVEL.md
 # Uploaded files
 uploads/
 !uploads/.gitkeep
+!uploads/logos/.gitkeep
+!uploads/signatures/.gitkeep
+!uploads/invoices/.gitkeep

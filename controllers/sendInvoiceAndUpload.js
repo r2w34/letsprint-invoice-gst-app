@@ -1,25 +1,12 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import nodemailer from "nodemailer";
 import multer from "multer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import SMTPConfig from "../Models/SMTPConfig.js";
 
-// Lazy-load S3 client to ensure environment variables are available
-let s3Client = null;
-
-function getS3Client() {
-  if (!s3Client) {
-    s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
-      endpoint: process.env.AWS_ENDPOINT_URL_S3,
-      forcePathStyle: process.env.AWS_ENDPOINT_URL_S3 ? true : false,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    });
-  }
-  return s3Client;
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configure Multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
@@ -30,37 +17,36 @@ export const sendInvoiceAndUpload = async (req, res) => {
     const shopDetails = JSON.parse(req.body.shopDetails);
     const pdfBuffer = req.file.buffer;
 
-    console.log("shopDetails", shopDetails, "orderId", orderId, "customerEmail", customerEmail);
-
     if (!customerEmail || !orderId || !shopDetails) {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // Upload to AWS S3
-    const s3Key = `${shopDetails.name}/invoices/${orderId}.pdf`;
-    const s3 = getS3Client();
+    // Save PDF to local storage
+    const uploadsDir = path.join(__dirname, "..", "uploads", "invoices");
+    const shopDir = path.join(uploadsDir, shopDetails.name.replace(/[^a-z0-9]/gi, '_'));
+    
+    // Create directories if they don't exist
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    if (!fs.existsSync(shopDir)) {
+      fs.mkdirSync(shopDir, { recursive: true });
+    }
 
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME || process.env.AWS_BUCKET_NAME,
-        Key: s3Key,
-        Body: pdfBuffer,
-        ContentType: "application/pdf",
-      })
-    );
+    // Save the PDF file
+    const fileName = `${orderId}.pdf`;
+    const filePath = path.join(shopDir, fileName);
+    fs.writeFileSync(filePath, pdfBuffer);
 
     // Fetch SMTP Configuration
     let smtpConfig = null;
 
     const shopSMTPConfig = await SMTPConfig.findOne({ shopId: shopDetails.id });
-    console.log("shopSMTPConfig", shopSMTPConfig);
     if(!shopSMTPConfig) {
       return res.status(400).json({ error: "SMTP configuration not found." });
     }
 
     if (shopSMTPConfig.smtpData.sendByOwnEmail) {
-      console.log("Using shop's own email settings");
-
       smtpConfig = {
         host: shopSMTPConfig.smtpData.host,
         port: shopSMTPConfig.smtpData.port,
@@ -71,8 +57,6 @@ export const sendInvoiceAndUpload = async (req, res) => {
         },
       };
     } else {
-      console.log("Using app default email settings");
-
       smtpConfig = {
         host: process.env.SUPPORT_EMAIL_HOST,
         port: process.env.SUPPORT_EMAIL_PORT,

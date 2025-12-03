@@ -8,7 +8,6 @@ import { shopifyApi } from "@shopify/shopify-api";
 */
 export const insertProductIntoDB = async (req, res) => {
  const { storeDomain, email, products } = req.body;
- console.log("body", req.body);
 
 
  if (!storeDomain || !email || !products || !Array.isArray(products)) {
@@ -26,15 +25,10 @@ export const insertProductIntoDB = async (req, res) => {
      // Merge new products with existing ones, ensuring no duplicates
      const existingProductIds = new Set(
        existingStore.products.map((product) => {
-         // console.log("product.id", product.productId);
          return product.productId;
        })
      );
      const uniqueNewProducts = products.filter((product) => {
-       // console.log('!existingProductIds.has(product.productId)', !existingProductIds.has(product.productId.toString()));
-       // console.log('product', product);
-       // console.log('existingProductIds',existingProductIds);
-       // console.log('product.productId.toString()', typeof product.productId.toString());
        return !existingProductIds.has(product.productId.toString());
      });
 
@@ -141,7 +135,6 @@ export const insertProductIntoDB = async (req, res) => {
 //       : null;
 
 
-//     console.log(`✅ Fetched ${products.length} products, Next Cursor: ${nextCursor}`);
 
 
 //     res.json({
@@ -231,9 +224,6 @@ export const insertProductIntoDB = async (req, res) => {
 //       : null;
 
 
-//     console.log(`✅ Fetched ${products.length} products`);
-//     console.log(`➡️ Next Cursor: ${nextCursor}`);
-//     console.log(`⬅️ Previous Cursor: ${previousCursor}`);
 
 
 //     res.json({
@@ -337,7 +327,6 @@ export const getProducts = async (req, res) => {
      : null;
 
 
-   // console.log(`✅ Fetched ${products.length} products`);
 
 
    res.json({
@@ -467,7 +456,6 @@ export const updateProductsInDB = async (req, res) => {
  const { storeDomain, email, products } = req.body;
 
 
- console.log("Request Body:", req.body);
 
 
  // Validate the input
@@ -498,7 +486,6 @@ export const updateProductsInDB = async (req, res) => {
 
 
      if (product) {
-       console.log("Matched Product:", product); // Debug log
        // Update fields and mark as modified
        product.set("hsn", updateData.HSN || product.hsn);
        product.set("gst", updateData.GST || product.gst);
@@ -512,7 +499,6 @@ export const updateProductsInDB = async (req, res) => {
    await store.save();
 
 
-   console.log("Updated Store:", store); // Debug log
    return res.status(200).json({
      message: "Products updated successfully.",
      store,
@@ -534,7 +520,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
  const { storeDomain, email } = req.query;
 
 
- console.log("Fetch GST Request Query:", req.query);
 
 
  // Validate input
@@ -595,7 +580,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 //  */
 // export const insertProductIntoDB = async (req, res) => {
 //   const { storeDomain, email, products } = req.body;
-//   console.log("body", req.body);
 
 //   if (!storeDomain || !email || !products || !Array.isArray(products)) {
 //     return res.status(400).json({
@@ -610,15 +594,10 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 //       // Merge new products with existing ones, ensuring no duplicates
 //       const existingProductIds = new Set(
 //         existingStore.products.map((product) => {
-//           // console.log("product.id", product.productId);
 //           return product.productId;
 //         })
 //       );
 //       const uniqueNewProducts = products.filter((product) => {
-//         // console.log('!existingProductIds.has(product.productId)', !existingProductIds.has(product.productId.toString()));
-//         // console.log('product', product);
-//         // console.log('existingProductIds',existingProductIds);
-//         // console.log('product.productId.toString()', typeof product.productId.toString());
 //         return !existingProductIds.has(product.productId.toString());
 //       });
 
@@ -730,7 +709,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 //       ? response.body.data.products.edges[0].cursor
 //       : null;
 
-//     // console.log(`✅ Fetched ${products.length} products`);
 
 //     res.json({
 //       products,
@@ -753,7 +731,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 // export const updateProductsInDB = async (req, res) => {
 //   const { storeDomain, email, products } = req.body;
 
-//   console.log("Request Body:", req.body);
 
 //   // Validate the input
 //   if (!storeDomain || !email || !products || !Array.isArray(products)) {
@@ -779,7 +756,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 //       );
 
 //       if (product) {
-//         console.log("Matched Product:", product); // Debug log
 //         // Update fields and mark as modified
 //         product.set("hsn", updateData.HSN || product.hsn);
 //         product.set("gst", updateData.GST || product.gst);
@@ -791,7 +767,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 //     // Save the updated store to the database
 //     await store.save();
 
-//     console.log("Updated Store:", store); // Debug log
 //     return res.status(200).json({
 //       message: "Products updated successfully.",
 //       store,
@@ -811,7 +786,6 @@ export const getAndHSNValuesFromDB = async (req, res) => {
 // export const getAndHSNValuesFromDB = async (req, res) => {
 //   const { storeDomain, email } = req.query;
 
-//   console.log("Fetch GST Request Query:", req.query);
 
 //   // Validate input
 //   if (!storeDomain || !email) {
